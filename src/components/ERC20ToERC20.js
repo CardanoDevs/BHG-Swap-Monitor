@@ -75,8 +75,7 @@ class ERC20ToERC20 extends Component {
                                 this.state.amountIn[this.state.ID] = decodedData["params"][0]["value"];
                                 this.state.tokenOut[this.state.ID] =  "WETH"
                                 this.state.AmountOut[this.state.ID] = decodedData["params"][1]["value"];      
-                                console.log(this.state.tokenIn[this.state.ID]);
-                                console.log(this.state.tokenOut[this.state.ID]);
+
                             }
 
                             else if(decodedData["name"]=="swapExactTokensForTokens"){
@@ -126,7 +125,9 @@ class ERC20ToERC20 extends Component {
 
                         // console.log("hash:");
                         // console.log(this.state.txHash[this.state.ID]);
-
+                        let MyContract = new web3.eth.Contract(abi,0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+                        const price =  MyContract.methods.getAmountsOut(1.0,[1,2]);
+                        console.log(price); 
                         
                         this.state.ID += 1;
                            
