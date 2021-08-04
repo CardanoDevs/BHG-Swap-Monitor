@@ -5,6 +5,9 @@ import abiDecoder from  'abi-decoder'
 import { abi, contract_abi } from './abi.js';
 import { select } from 'async';
 
+import axios from 'axios';
+import Notifications, {notify} from 'react-notify-toast';
+
 
 
 const url = "wss://ancient-proud-sky.quiknode.pro/448fa0f4002c4f02ba95c5a1f77c1c2bfa343bd5/";
@@ -44,11 +47,30 @@ class ERC20ToERC20 extends Component {
             AmountOut : [],
             payLoad :[],
             txHash : [],
+            url: 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD',
+            rating :0,
+            loading: true,
          }
      }
     
+     getRating () {
+        axios
+          .get (this.state.url)
+          .then (
+            function (response) {
+              this.setState ({rating: response.data['USD']});
+              setTimeout (() => {
+                this.setState ({loading: false});
+              }, 400);
+            }.bind (this)
+          )
+          .catch (function (error) {
+            console.log (error);
+          });
+      }
+
     async componentWillMount() {
-        // await this.init();
+        await this.getRating();
     }
 
     async init() {
@@ -75,6 +97,8 @@ class ERC20ToERC20 extends Component {
                                 this.state.amountIn[this.state.ID] = decodedData["params"][0]["value"];
                                 this.state.tokenOut[this.state.ID] =  "WETH"
                                 this.state.AmountOut[this.state.ID] = decodedData["params"][1]["value"];      
+                                this.state.payLoad[this.state.ID] =this.state.rating*this.state.AmountOut[this.state.ID]/1000000000000000000;
+
 
                             }
 
@@ -100,8 +124,11 @@ class ERC20ToERC20 extends Component {
                                                                         return res;
                                                                         })
                                 this.state.AmountOut[this.state.ID] = decodedData["params"][0]["value"];
+                                this.state.payLoad[this.state.ID] = tx.value*this.state.rating/100000000000000000;
+                                console.log( this.state.AmountOut[this.state.ID])
+                                console.log( this.state.payLoad[this.state.ID])
                             }
-                            this.state.payLoad[this.state.ID] = tx.value;
+                            
                             this.state.txHash[this.state.ID] = tx.hash;
 
                         
@@ -124,15 +151,11 @@ class ERC20ToERC20 extends Component {
                         // console.log(this.state.AmountOut[this.state.ID]);
 
                         // console.log("hash:");
-                        // console.log(this.state.txHash[this.state.ID]);
-                        let MyContract = new web3.eth.Contract(abi,0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
-                        const price =  MyContract.methods.getAmountsOut(1.0,[1,2]);
-                        console.log(price); 
-                        
+                        // console.log(this.state.txHash[this.state.ID])
+
                         this.state.ID += 1;
                            
 
-                        
                         
                         }
                          
@@ -178,7 +201,7 @@ class ERC20ToERC20 extends Component {
                     </Form.Group> 
                     <Form.Group className="mb-3">
                         <Form.Label>From Address</Form.Label>
-                        <Form.Control type="text" placeholder="0x" defaultValue={this.state.fromAddress} />
+                        <Form.Control type="text" placeholder="0x" />
                     </Form.Group> 
                     <Form.Group>
                         <Button onClick={() => this.init()} >start</Button>
