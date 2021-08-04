@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
 import { Button, Form, Row, Col, Table } from 'react-bootstrap';
 import Web3 from 'web3';
-import abiDecoder from 'abi-decoder';
+import abiDecoder from  'abi-decoder'
+import { abi, contract_abi } from './abi.js';
+import { select } from 'async';
+
 
 
 
@@ -60,17 +63,47 @@ class ERC20ToERC20 extends Component {
                     let tx = await web3.eth.getTransaction(txHash);
                         if(tx.to == this.state.toAddress)
                         {
+
+                            abiDecoder.addABI(abi);
+                            const decodedData = abiDecoder.decodeMethod(tx.input);
+                            console.log(decodedData["name"])
+
+
                             this.state.fromAddress[this.state.ID] = tx.from;
+
+                        //--------------------------------------------------------------------
                             this.state.timeStamp[this.state.ID] = new Date().toISOString();
                             this.state.label[this.state.ID] = 'john'
-                            this.state.tokenIn[this.state.ID] = tx.input
-                            this.state.amountIn[this.state.ID] = tx.value;
-                            this.state.tokenOut[this.state.ID] = 'uni';
-                            this.state.AmountOut[this.state.ID] = tx.value;
+
+                        //--------------------------------------------------------------------
+                            if (decodedData["name"]=="swapExactTokensForETH"){
+                                this.state.tokenIn[this.state.ID] = decodedData["params"][2]["value"][0];
+                                this.state.amountIn[this.state.ID] = decodedData["params"][0]["value"];
+                                console.log(this.state.amountIn[this.state.ID])
+                                this.state.tokenOut[this.state.ID] = 'uni';
+                                this.state.AmountOut[this.state.ID] = tx.value;
+                            }
+                            else if(decodedData["name"]=="swapExactTokensForTokens"){
+                                this.state.tokenIn[this.state.ID] = tx.from;
+                                this.state.amountIn[this.state.ID] = tx.value;
+                                this.state.tokenOut[this.state.ID] = 'uni';
+                                this.state.AmountOut[this.state.ID] = tx.value;
+                            }
+                            else if(decodedData["name"]="swapExactETHForTokens"){
+                                this.state.tokenIn[this.state.ID] = tx.from;
+                                this.state.amountIn[this.state.ID] = tx.value;
+                                this.state.tokenOut[this.state.ID] = 'uni';
+                                this.state.AmountOut[this.state.ID] = tx.value;
+                            }
+                            
+
+
                             this.state.payLoad[this.state.ID] = tx.value;
                             this.state.txHash[this.state.ID] = tx.hash;
                             this.state.ID += 1;
-                            console.log(tx.input)
+
+                           
+
                         }
                     } catch (err) {
                      console.error(err);
@@ -98,10 +131,6 @@ class ERC20ToERC20 extends Component {
 
         }
    
-
-
-
-
     render () {
         return (
             <div>
@@ -126,7 +155,6 @@ class ERC20ToERC20 extends Component {
                         <tr>
                             <th>#</th>
                             <th>TimeStamp</th>
-                            <th>From Address</th>
                             <th>Label</th>
                             <th>Token IN</th>
                             <th>Amount In</th>
@@ -148,3 +176,4 @@ class ERC20ToERC20 extends Component {
 }
 
 export default ERC20ToERC20;
+
