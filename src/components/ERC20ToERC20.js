@@ -7,9 +7,6 @@ import { select } from 'async';
 
 
 
-
-
-
 const url = "wss://ancient-proud-sky.quiknode.pro/448fa0f4002c4f02ba95c5a1f77c1c2bfa343bd5/";
 const options = {
   timeout: 30000,
@@ -29,10 +26,6 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider(url, options));
 const subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {
   if (err) console.error(err);
 });
-
-
-
-
 
 class ERC20ToERC20 extends Component {
      constructor(props) {
@@ -66,45 +59,42 @@ class ERC20ToERC20 extends Component {
 
                             abiDecoder.addABI(abi);
                             const decodedData = abiDecoder.decodeMethod(tx.input);
-                            console.log(decodedData["name"])
-
-
+                        
                             this.state.fromAddress[this.state.ID] = tx.from;
-
                         //--------------------------------------------------------------------
                             this.state.timeStamp[this.state.ID] = new Date().toISOString();
                             this.state.label[this.state.ID] = 'john'
-
                         //--------------------------------------------------------------------
                             if (decodedData["name"]=="swapExactTokensForETH"){
                                 this.state.tokenIn[this.state.ID] = decodedData["params"][2]["value"][0];
                                 this.state.amountIn[this.state.ID] = decodedData["params"][0]["value"];
-                                console.log(this.state.amountIn[this.state.ID])
-                                this.state.tokenOut[this.state.ID] = 'uni';
-                                this.state.AmountOut[this.state.ID] = tx.value;
+                                this.state.tokenOut[this.state.ID] = decodedData["params"][2]["value"][1];;
+                                this.state.AmountOut[this.state.ID] = decodedData["params"][1]["value"];
                             }
                             else if(decodedData["name"]=="swapExactTokensForTokens"){
-                                this.state.tokenIn[this.state.ID] = tx.from;
-                                this.state.amountIn[this.state.ID] = tx.value;
-                                this.state.tokenOut[this.state.ID] = 'uni';
-                                this.state.AmountOut[this.state.ID] = tx.value;
-                            }
+                                this.state.tokenIn[this.state.ID] = decodedData["params"][2]["value"][0];
+                                this.state.amountIn[this.state.ID] = decodedData["params"][1]["value"];
+                                this.state.tokenOut[this.state.ID] = decodedData["params"][2]["value"][3];
+                                this.state.AmountOut[this.state.ID] = decodedData["params"][0]["value"];
+                            }    
                             else if(decodedData["name"]="swapExactETHForTokens"){
-                                this.state.tokenIn[this.state.ID] = tx.from;
+                                this.state.tokenIn[this.state.ID] = decodedData["params"][1]["value"][0];
                                 this.state.amountIn[this.state.ID] = tx.value;
-                                this.state.tokenOut[this.state.ID] = 'uni';
-                                this.state.AmountOut[this.state.ID] = tx.value;
+                                this.state.tokenOut[this.state.ID] = decodedData["params"][1]["value"][1];
+                                this.state.AmountOut[this.state.ID] = decodedData["params"][0]["value"];
                             }
-                            
-
-
                             this.state.payLoad[this.state.ID] = tx.value;
                             this.state.txHash[this.state.ID] = tx.hash;
                             this.state.ID += 1;
-
+                            
+                            
+                            
                            
 
+                        
+                        
                         }
+                         
                     } catch (err) {
                      console.error(err);
                 }
