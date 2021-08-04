@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { Button, Form, Row, Col, Table } from 'react-bootstrap';
 import Web3 from 'web3';
+import abiDecoder from 'abi-decoder';
 
 
 
