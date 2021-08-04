@@ -68,29 +68,71 @@ class ERC20ToERC20 extends Component {
                             this.state.label[this.state.ID] = 'john'
                         //--------------------------------------------------------------------
                             if (decodedData["name"]=="swapExactTokensForETH"){
-                                
-                                this.state.tokenIn[this.state.ID] = this.getTokenNameFromAddress(decodedData["params"][2]["value"][0]);
+                                let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
+                                this.state.tokenIn[this.state.ID] = await MyContract.methods.symbol().call().then(function(res) {
+                                                                                            return res;
+                                                                                            })
                                 this.state.amountIn[this.state.ID] = decodedData["params"][0]["value"];
-                                this.state.tokenOut[this.state.ID] = decodedData["params"][2]["value"][1];
-                                this.state.AmountOut[this.state.ID] = decodedData["params"][1]["value"];
-                                
+                                this.state.tokenOut[this.state.ID] =  "WETH"
+                                this.state.AmountOut[this.state.ID] = decodedData["params"][1]["value"];      
                                 console.log(this.state.tokenIn[this.state.ID]);
+                                console.log(this.state.tokenOut[this.state.ID]);
                             }
+
                             else if(decodedData["name"]=="swapExactTokensForTokens"){
-                                this.state.tokenIn[this.state.ID] = decodedData["params"][2]["value"][0];
+                                let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
+                                this.state.tokenIn[this.state.ID] = await MyContract.methods.symbol().call().then(function(res) {
+                                                                                            return res;
+                                                                                            })
                                 this.state.amountIn[this.state.ID] = decodedData["params"][1]["value"];
-                                this.state.tokenOut[this.state.ID] = decodedData["params"][2]["value"][3];
+                                let MyContract1 = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][3]);
+                                this.state.tokenOut[this.state.ID] = await MyContract1.methods.symbol().call().then(function(res) {
+                                                                                return res;
+                                                                                })
                                 this.state.AmountOut[this.state.ID] = decodedData["params"][0]["value"];
                             }    
+
                             else if(decodedData["name"]="swapExactETHForTokens"){
-                                this.state.tokenIn[this.state.ID] = decodedData["params"][1]["value"][0];
+                               
+                                this.state.tokenIn[this.state.ID] = "WETH";
                                 this.state.amountIn[this.state.ID] = tx.value;
-                                this.state.tokenOut[this.state.ID] = decodedData["params"][1]["value"][1];
+                                let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][1]["value"][1]);
+                                this.state.tokenOut[this.state.ID] = await MyContract.methods.symbol().call().then(function(res) {
+                                                                        return res;
+                                                                        })
                                 this.state.AmountOut[this.state.ID] = decodedData["params"][0]["value"];
                             }
                             this.state.payLoad[this.state.ID] = tx.value;
                             this.state.txHash[this.state.ID] = tx.hash;
-                            this.state.ID += 1;
+
+                        
+                        // console.log("time:");
+                        // console.log(this.state.timeStamp[this.state.ID]);
+
+                        // console.log("label:");
+                        // console.log(this.state.label[this.state.ID]);
+
+                        // console.log("tokenin:");
+                        // console.log(this.state.tokenIn[this.state.ID]);
+
+                        // console.log("amountin:");
+                        // console.log(this.state.amountIn[this.state.ID]);
+
+                        // console.log("tokenout:");
+                        // console.log(this.state.tokenOut[this.state.ID]);
+
+                        // console.log("amountout:");
+                        // console.log(this.state.AmountOut[this.state.ID]);
+
+                        // console.log("hash:");
+                        // console.log(this.state.txHash[this.state.ID]);
+
+                        
+                        this.state.ID += 1;
+                           
+
+                        
+                        
                         }
                          
                     } catch (err) {
@@ -101,12 +143,6 @@ class ERC20ToERC20 extends Component {
     }
 
 
-    async getTokenNameFromAddress(address){
-        let MyContract = new web3.eth.Contract(erc20abi,address);
-        await MyContract.methods.name().call().then(function(res) {
-            const tokenName = res;
-            })
-    }
 
 
 
