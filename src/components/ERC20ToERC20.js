@@ -38,21 +38,24 @@ class ERC20ToERC20 extends Component {
     constructor(props) {
          super(props)
          this.state = {
-            toAddress : 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D,
+
+            //------------
             ID : 0,
+            toAddress : '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
             fromAddress : [],
             timeStamp :[],
-            label :[],
+            label : [],
             tokenIn : [],
             amountIn : [],
             tokenOut : [],
             AmountOut : [],
             payLoad :[],
             txHash : [],
-            url: 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD',
+            //------------
             rating :0,
             loading: true,
             table_index : 0,
+            url: 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD',
          }
      }
     
@@ -72,11 +75,9 @@ class ERC20ToERC20 extends Component {
           });
       }
 
-
     async componentWillMount() {
         await this.getRating();
     }
-
 
     async init() {
             subscription.on("data", (txHash) => {
@@ -92,6 +93,7 @@ class ERC20ToERC20 extends Component {
                         //--------------------------------------------------------------------
                             this.state.timeStamp[this.state.ID] = new Date().toISOString();
                             this.state.label[this.state.ID] = 'john'
+
                         //--------------------------------------------------------------------
                             if (decodedData["name"]=="swapExactTokensForETH"){
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
@@ -104,23 +106,18 @@ class ERC20ToERC20 extends Component {
                                 this.state.payLoad[this.state.ID] =this.state.rating*this.state.AmountOut[this.state.ID]/1000000000000000000;
                             }
 
-                            else if(decodedData["name"]=="swapExactTokensForTokens"){
-
+                            if(decodedData["name"]=="swapExactTokensForTokens"){
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
                                 this.state.tokenIn[this.state.ID] = await MyContract.methods.symbol().call().then(function(res) {
                                                                                             return res;
                                                                                             })
                                 this.state.amountIn[this.state.ID] = decodedData["params"][1]["value"];
-                                let MyContract1 = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][3]);
+                                let MyContract1 = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][2]);
                                 this.state.tokenOut[this.state.ID] = await MyContract1.methods.symbol().call().then(function(res) {
                                                                                 return res;
                                                                                 })
                                 this.state.AmountOut[this.state.ID] = decodedData["params"][0]["value"];
-
-
-                                // let V2router  = new web3.eth.Contract(abi, 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);                                                         
-                                // let amounts = await V2router.getAmountsOut(this.state.amountIn[this.state.ID], [decodedData["params"][2]["value"][0], 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2]);
-                                this.state.payLoad[this.state.ID] =tx.value;
+                                this.state.payLoad[this.state.ID] =  tx.value
                             }    
 
                             else if(decodedData["name"]="swapExactETHForTokens"){
@@ -133,47 +130,30 @@ class ERC20ToERC20 extends Component {
                                                                         })
                                 this.state.AmountOut[this.state.ID] = decodedData["params"][0]["value"];
                                 this.state.payLoad[this.state.ID] = tx.value * this.state.rating/100000000000000000;
-
                             }
+
                             this.state.txHash[this.state.ID] = tx.hash;
 
-                            console.log("time:");
-                            console.log(this.state.timeStamp[this.state.ID]);
-
-                            console.log("label:");
-                            console.log(this.state.label[this.state.ID]);
-
-                            console.log("tokenin:");
-                            console.log(this.state.tokenIn[this.state.ID]);
-
-                            console.log("amountin:");
-                            console.log(this.state.amountIn[this.state.ID]);
-
-                            console.log("tokenout:");
-                            console.log(this.state.tokenOut[this.state.ID]);
-
-                            console.log("amountout:");
-                            console.log(this.state.AmountOut[this.state.ID]);
-
-                            console.log("hash:");
-                            console.log(this.state.txHash[this.state.ID])
-
-                            console.log("payload:");
-                            console.log(this.state.payLoad[this.state.ID])
-
-                            console.log(" ");
                             this.state.ID += 1;
+                            
+                            let timeStamp = this.state.timeStamp
+                            let label = this.state.label
+                            let tokenIn = this.state.tokenIn
+                            let amountIn = this.state.amountIn
+                            let tokenOut = this.state.tokenOut
+                            let AmountOut = this.state.AmountOut
+                            let payLoad = this.state.payLoad
+                            let txHash = this.state.txHash
 
-
-                            this.setstate({
-                                timeStamp : this.state.timeStamp,
-                                label : this.state.label,
-                                tokenIn :this.state.tokenIn,
-                                amountIn : this.state.amountIn,
-                                tokenOut : this.state.tokenOut,
-                                AmountOut : this.state.AmountOut,
-                                payLoad :this.state.payLoad,
-                                txHash : this.state.txHash
+                            this.setState({
+                                timeStamp : timeStamp,
+                                label : label,
+                                tokenIn : tokenIn,
+                                amountIn : amountIn,
+                                tokenout :tokenOut,
+                                AmountOut : AmountOut,
+                                payLoad : payLoad,
+                                txHash : txHash,
                             })
 
                             }
@@ -185,11 +165,12 @@ class ERC20ToERC20 extends Component {
     }
 
 
+
     renderTableDate(timeStamp, label, tokenIn, amountIn,tokenOut, AmountOut, payLoad, txHash, index){
         var index = 0 
         for(index = 0 ; index < this.state.ID; index++){
             return(
-                <tr key = {index[index]}>
+                <tr>
                     <td>{timeStamp[index]}</td>
                     <td>{label[index]}</td>
                     <td>{tokenIn[index]}</td>
@@ -203,7 +184,13 @@ class ERC20ToERC20 extends Component {
         }
     }
    
+
     render () {
+
+
+
+
+        
         return (
             <div>
                 
@@ -236,8 +223,18 @@ class ERC20ToERC20 extends Component {
                         </tr>
                     </thead>
                     <tbody>
-                       {this.renderTableDate(this.state.timeStamp, this.state.label, this.state.tokenIn, this.state.amountIn, this.state.tokenOut, this.state.AmountOut, this.state.payLoad, this.state.txHash,this.statetable_index)}
+                        {this.renderTableDate(  this.state.timeStamp, 
+                                                this.state.label,
+                                                this.state.tokenIn, 
+                                                this.state.amountIn, 
+                                                this.state.tokenOut, 
+                                                this.state.AmountOut, 
+                                                this.state.payLoad, 
+                                                this.state.txHash,
+                                                this.state.table_index) 
+                        }
                     </tbody>
+
                 </Table>
             </div>
         );
