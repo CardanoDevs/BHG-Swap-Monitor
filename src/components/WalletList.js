@@ -33,7 +33,7 @@ const subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {
 const erc20abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"guy","type":"address"},{"name":"wad","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"src","type":"address"},{"name":"dst","type":"address"},{"name":"wad","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"wad","type":"uint256"}],"name":"withdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dst","type":"address"},{"name":"wad","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"guy","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Deposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Withdrawal","type":"event"}]
 
 
-class ERC20ToERC20 extends Component {
+class WalletList extends Component {
      
     constructor(props) {
          super(props)
@@ -78,7 +78,7 @@ class ERC20ToERC20 extends Component {
       }
 
     async componentWillMount() {
-        await this.getRating();
+
     }
 
     async init() {
@@ -104,6 +104,7 @@ class ERC20ToERC20 extends Component {
                                 transaction.amountIn    = decodedData['params'][0]['value']
                                 transaction.tokenOut    = 'WETH'
                                 transaction.AmountOut   = decodedData['params'][1]['value']
+                                await this.getRating();
                                 transaction.payLoad     = this.state.rating * transaction.AmountOut / 1000000000000000000
                             } else if (decodedData["name"]=="swapExactTokensForTokens") {
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
@@ -116,6 +117,7 @@ class ERC20ToERC20 extends Component {
                                     return res
                                 })
                                 transaction.AmountOut   = decodedData['params'][0]['value']
+                                await this.getRating();
                                 transaction.payLoad     = tx.value
                             }    
 
@@ -127,8 +129,10 @@ class ERC20ToERC20 extends Component {
                                     return res
                                 })
                                 transaction.AmountOut   = decodedData['params'][0]['value']
+                                await this.getRating();
                                 transaction.payLoad     = tx.value * this.state.rating / 100000000000000000
                             }
+                            
                             transaction.ID      = this.state.ID + 1
                             transaction.txHash  = tx.hash
                             let transactions    = this.state.transactions
@@ -199,5 +203,5 @@ class ERC20ToERC20 extends Component {
         );
     }
 }
-export default ERC20ToERC20;
+export default WalletList;
 

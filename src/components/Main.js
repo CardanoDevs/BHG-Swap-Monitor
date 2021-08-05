@@ -5,7 +5,9 @@ import {
     Route,
 } from "react-router-dom";
 
-import ERC20ToERC20 from './ERC20ToERC20.js';
+import Display from './Display.js';
+import WalletList  from './WalletList.js';
+import AddList from './AddList.js'
 // import Erc20 from './Erc20.js';
 
 class Main extends Component {
@@ -14,8 +16,14 @@ class Main extends Component {
             <Container>
                 <Col lg="12" >
                     <Switch>
-                        <Route path="/erc20toerc20">
-                            <ERC20ToERC20 />
+                        <Route path="/Display">
+                            <Display/>
+                        </Route>
+                        <Route Path="/WalletList">
+                            <WalletList/>
+                        </Route>
+                        <Route path = "/AddList">
+                            <AddList/>
                         </Route>
                     </Switch>
                 </Col>

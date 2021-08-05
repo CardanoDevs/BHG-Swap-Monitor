@@ -9,10 +9,10 @@ class TopNav extends Component {
                     <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                     <Navbar.Collapse id="responsive-navbar-nav">
                         <Nav className="me-auto">
-                            <Nav.Link href="/erc20toerc20">Uniswap</Nav.Link>
+                            <Nav.Link href="/Display">Uniswap</Nav.Link>
                         </Nav>
-                        <Nav>
-                            <Nav.Link href="#deets">Client</Nav.Link>
+                        <Nav className="me-auto">
+                            <Nav.Link href="/WalletList">WalletList</Nav.Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>
