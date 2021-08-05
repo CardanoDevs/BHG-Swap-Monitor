@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
-import { Button, Form, Row, Col, Table } from 'react-bootstrap';
+import { Button, Form, Table } from 'react-bootstrap';
 import Web3 from 'web3';
 import abiDecoder from  'abi-decoder'
-import { abi, contract_abi } from './abi.js';
-import { select } from 'async';
+import { abi} from './abi.js';
+
 
 import axios from 'axios';
-import Notifications, {notify} from 'react-notify-toast';
+
 
 
 
@@ -34,134 +34,9 @@ const erc20abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":
 
 
 class WalletList extends Component {
-     
-    constructor(props) {
-         super(props)
-         this.state = {
-
-            //------------
-            ID : 0,
-            toAddress : '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
-            fromAddress : '',
-            timeStamp : 0,
-            label : '',
-            tokenIn : '',
-            amountIn : 0,
-            tokenOut : '',
-            AmountOut : 0,
-            payLoad :0,
-            txHash : '',
-            //------------
-            rating :0,
-            loading: true,
-            table_index : 0,
-            url: 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD',
-            //------------
-            transactions : [],
-         }
-     }
-    
-    getRating () {
-        axios
-          .get (this.state.url)
-          .then (
-            function (response) {
-              this.setState ({rating: response.data['USD']});
-              setTimeout (() => {
-                this.setState ({loading: false});
-              }, 400);
-            }.bind (this)
-          )
-          .catch (function (error) {
-            console.log (error);
-          });
-      }
-
-    async componentWillMount() {
-
-    }
-
-    async init() {
-            subscription.on("data", (txHash) => {
-              setTimeout(async () => {
-                try {
-                    let tx = await web3.eth.getTransaction(txHash);
-                        if(tx.to == this.state.toAddress) {
-                            abiDecoder.addABI(abi);
-                            const decodedData = abiDecoder.decodeMethod(tx.input);
-
-                            let transaction = {
-                                fromAddress : tx.from,
-                                label : 'john',
-                                timeStamp : new Date().toISOString(),
-                            }
-                            //--------------------------------------------------------------------
-                            if (decodedData["name"]=="swapExactTokensForETH"){
-                                let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
-                                transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
-                                    return res;
-                                })
-                                transaction.amountIn    = decodedData['params'][0]['value']
-                                transaction.tokenOut    = 'WETH'
-                                transaction.AmountOut   = decodedData['params'][1]['value']
-                                await this.getRating();
-                                transaction.payLoad     = this.state.rating * transaction.AmountOut / 1000000000000000000
-                            } else if (decodedData["name"]=="swapExactTokensForTokens") {
-                                let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
-                                transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
-                                    return res;
-                                })
-                                transaction.amountIn    = decodedData['params'][1]['value']
-                                let MyContract1         = new web3.eth.Contract(erc20abi, decodedData['params'][2]['value'][2])
-                                transaction.tokenOut    = await MyContract1.methods.symbol().call().then(function(res) {
-                                    return res
-                                })
-                                transaction.AmountOut   = decodedData['params'][0]['value']
-                                await this.getRating();
-                                transaction.payLoad     = tx.value
-                            }    
-
-                            else if(decodedData["name"]="swapExactETHForTokens"){
-                                transaction.tokenIn     = 'WETH'
-                                transaction.amountIn    = tx.value
-                                let MyContract  = new web3.eth.Contract(erc20abi, decodedData['params'][1]['value'][1])
-                                transaction.tokenOut    = await MyContract.methods.symbol().call().then(function (res) {
-                                    return res
-                                })
-                                transaction.AmountOut   = decodedData['params'][0]['value']
-                                await this.getRating();
-                                transaction.payLoad     = tx.value * this.state.rating / 100000000000000000
-                            }
-                            
-                            transaction.ID      = this.state.ID + 1
-                            transaction.txHash  = tx.hash
-                            let transactions    = this.state.transactions
-                            transactions.push(transaction)
-                            
-                            this.setState(transaction);
-                            this.setState({
-                                transactions : transactions
-                            })
-                        }
-                    } catch (err) {
-                     console.error(err);
-                }
-            });
-        });
-    }
     render () {
-        const renderTable = this.state.transactions.map((transaction) => 
-            <tr key={transaction.ID}>
-                <td>{transaction.timeStamp}</td>
-                <td>{transaction.label}</td>
-                <td>{transaction.tokenIn}</td>
-                <td>{transaction.amountIn}</td>
-                <td>{transaction.tokenOut}</td>
-                <td>{transaction.AmountOut}</td>
-                <td>{transaction.payLoad}</td>
-                <td>{transaction.txHash}</td>
-            </tr>
-        )
+       
+        
         
         return (
             <div>
@@ -170,35 +45,17 @@ class WalletList extends Component {
                 <Form>
                     <Form.Group className="mb-3">
                         <Form.Label>Uniswap Router Address</Form.Label>
-                        <Form.Control type="text" placeholder="Swap ID" defaultValue={this.state.toAddress}/>
+                        <Form.Control type="text" placeholder="Swap ID" />
                     </Form.Group> 
                     <Form.Group className="mb-3">
                         <Form.Label>From Address</Form.Label>
                         <Form.Control type="text" placeholder="0x" />
                     </Form.Group> 
                     <Form.Group>
-                        <Button onClick={() => this.init()} >start</Button>
                     </Form.Group>
                 </Form>
 
-                <Table striped bordered hover>
-                    <thead>
-                        <tr>
-                            <th>TimeStamp</th>
-                            <th>Label</th>
-                            <th>Token IN</th>
-                            <th>Amount In</th>
-                            <th>Token Out</th>
-                            <th>Amount Out</th>
-                            <th>Payload</th>
-                            <th>TX Hash</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {renderTable}
-                    </tbody>
 
-                </Table>
             </div>
         );
     }
