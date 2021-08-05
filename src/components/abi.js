@@ -191,3 +191,4 @@ export const contract_abi = [
 		"type": "receive"
 	}
 ]
+
