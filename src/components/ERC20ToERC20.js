@@ -42,20 +42,22 @@ class ERC20ToERC20 extends Component {
             //------------
             ID : 0,
             toAddress : '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
-            fromAddress : [],
-            timeStamp :[],
-            label : [],
-            tokenIn : [],
-            amountIn : [],
-            tokenOut : [],
-            AmountOut : [],
-            payLoad :[],
-            txHash : [],
+            fromAddress : '',
+            timeStamp : 0,
+            label : '',
+            tokenIn : '',
+            amountIn : 0,
+            tokenOut : '',
+            AmountOut : 0,
+            payLoad :0,
+            txHash : '',
             //------------
             rating :0,
             loading: true,
             table_index : 0,
             url: 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD',
+            //------------
+            transactions : [],
          }
      }
     
@@ -84,112 +86,78 @@ class ERC20ToERC20 extends Component {
               setTimeout(async () => {
                 try {
                     let tx = await web3.eth.getTransaction(txHash);
-                        if(tx.to == this.state.toAddress)
-                        {
+                        if(tx.to == this.state.toAddress) {
                             abiDecoder.addABI(abi);
                             const decodedData = abiDecoder.decodeMethod(tx.input);
-                        
-                            this.state.fromAddress[this.state.ID] = tx.from;
-                        //--------------------------------------------------------------------
-                            this.state.timeStamp[this.state.ID] = new Date().toISOString();
-                            this.state.label[this.state.ID] = 'john'
 
-                        //--------------------------------------------------------------------
+                            let transaction = {
+                                fromAddress : tx.from,
+                                label : 'john',
+                                timeStamp : new Date().toISOString(),
+                            }
+                            //--------------------------------------------------------------------
                             if (decodedData["name"]=="swapExactTokensForETH"){
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
-                                this.state.tokenIn[this.state.ID] = await MyContract.methods.symbol().call().then(function(res) {
-                                                                                            return res;
-                                                                                            })
-                                this.state.amountIn[this.state.ID] = decodedData["params"][0]["value"];
-                                this.state.tokenOut[this.state.ID] =  "WETH"
-                                this.state.AmountOut[this.state.ID] = decodedData["params"][1]["value"];      
-                                this.state.payLoad[this.state.ID] =this.state.rating*this.state.AmountOut[this.state.ID]/1000000000000000000;
-                            }
-
-                            if(decodedData["name"]=="swapExactTokensForTokens"){
+                                transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
+                                    return res;
+                                })
+                                transaction.amountIn    = decodedData['params'][0]['value']
+                                transaction.tokenOut    = 'WETH'
+                                transaction.AmountOut   = decodedData['params'][1]['value']
+                                transaction.payLoad     = this.state.rating * transaction.AmountOut / 1000000000000000000
+                            } else if (decodedData["name"]=="swapExactTokensForTokens") {
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
-                                this.state.tokenIn[this.state.ID] = await MyContract.methods.symbol().call().then(function(res) {
-                                                                                            return res;
-                                                                                            })
-                                this.state.amountIn[this.state.ID] = decodedData["params"][1]["value"];
-                                let MyContract1 = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][2]);
-                                this.state.tokenOut[this.state.ID] = await MyContract1.methods.symbol().call().then(function(res) {
-                                                                                return res;
-                                                                                })
-                                this.state.AmountOut[this.state.ID] = decodedData["params"][0]["value"];
-                                this.state.payLoad[this.state.ID] =  tx.value
+                                transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
+                                    return res;
+                                })
+                                transaction.amountIn    = decodedData['params'][1]['value']
+                                let MyContract1         = new web3.eth.Contract(erc20abi, decodedData['params'][2]['value'][2])
+                                transaction.tokenOut    = await MyContract1.methods.symbol().call().then(function(res) {
+                                    return res
+                                })
+                                transaction.AmountOut   = decodedData['params'][0]['value']
+                                transaction.payLoad     = tx.value
                             }    
 
                             else if(decodedData["name"]="swapExactETHForTokens"){
-                               
-                                this.state.tokenIn[this.state.ID] = "WETH";
-                                this.state.amountIn[this.state.ID] = tx.value;
-                                let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][1]["value"][1]);
-                                this.state.tokenOut[this.state.ID] = await MyContract.methods.symbol().call().then(function(res) {
-                                                                        return res;
-                                                                        })
-                                this.state.AmountOut[this.state.ID] = decodedData["params"][0]["value"];
-                                this.state.payLoad[this.state.ID] = tx.value * this.state.rating/100000000000000000;
+                                transaction.tokenIn     = 'WETH'
+                                transaction.amountIn    = tx.value
+                                let MyContract  = new web3.eth.Contract(erc20abi, decodedData['params'][1]['value'][1])
+                                transaction.tokenOut    = await MyContract.methods.symbol().call().then(function (res) {
+                                    return res
+                                })
+                                transaction.AmountOut   = decodedData['params'][0]['value']
+                                transaction.payLoad     = tx.value * this.state.rating / 100000000000000000
                             }
-
-                            this.state.txHash[this.state.ID] = tx.hash;
-
-                            this.state.ID += 1;
+                            transaction.ID      = this.state.ID + 1
+                            transaction.txHash  = tx.hash
+                            let transactions    = this.state.transactions
+                            transactions.push(transaction)
                             
-                            let timeStamp = this.state.timeStamp
-                            let label = this.state.label
-                            let tokenIn = this.state.tokenIn
-                            let amountIn = this.state.amountIn
-                            let tokenOut = this.state.tokenOut
-                            let AmountOut = this.state.AmountOut
-                            let payLoad = this.state.payLoad
-                            let txHash = this.state.txHash
-
+                            this.setState(transaction);
                             this.setState({
-                                timeStamp : timeStamp,
-                                label : label,
-                                tokenIn : tokenIn,
-                                amountIn : amountIn,
-                                tokenout :tokenOut,
-                                AmountOut : AmountOut,
-                                payLoad : payLoad,
-                                txHash : txHash,
+                                transactions : transactions
                             })
-
-                            }
+                        }
                     } catch (err) {
                      console.error(err);
                 }
             });
         });
     }
-
-
-
-    renderTableDate(timeStamp, label, tokenIn, amountIn,tokenOut, AmountOut, payLoad, txHash, index){
-        var index = 0 
-        for(index = 0 ; index < this.state.ID; index++){
-            return(
-                <tr>
-                    <td>{timeStamp[index]}</td>
-                    <td>{label[index]}</td>
-                    <td>{tokenIn[index]}</td>
-                    <td>{amountIn[index]}</td>
-                    <td>{tokenOut[index]}</td>
-                    <td>{AmountOut[index]}</td>
-                    <td>{payLoad[index]}</td>
-                    <td>{txHash[index]}</td>
-                </tr>
-            )
-        }
-    }
-   
-
     render () {
-
-
-
-
+        const renderTable = this.state.transactions.map((transaction) => 
+            <tr key={transaction.ID}>
+                <td>{transaction.timeStamp}</td>
+                <td>{transaction.label}</td>
+                <td>{transaction.tokenIn}</td>
+                <td>{transaction.amountIn}</td>
+                <td>{transaction.tokenOut}</td>
+                <td>{transaction.AmountOut}</td>
+                <td>{transaction.payLoad}</td>
+                <td>{transaction.txHash}</td>
+            </tr>
+        )
         
         return (
             <div>
@@ -223,16 +191,7 @@ class ERC20ToERC20 extends Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.renderTableDate(  this.state.timeStamp, 
-                                                this.state.label,
-                                                this.state.tokenIn, 
-                                                this.state.amountIn, 
-                                                this.state.tokenOut, 
-                                                this.state.AmountOut, 
-                                                this.state.payLoad, 
-                                                this.state.txHash,
-                                                this.state.table_index) 
-                        }
+                        {renderTable}
                     </tbody>
 
                 </Table>
