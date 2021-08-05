@@ -34,7 +34,8 @@ const erc20abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":
 
 
 class ERC20ToERC20 extends Component {
-     constructor(props) {
+     
+    constructor(props) {
          super(props)
          this.state = {
             toAddress : 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D,
@@ -55,7 +56,7 @@ class ERC20ToERC20 extends Component {
          }
      }
     
-     getRating () {
+    getRating () {
         axios
           .get (this.state.url)
           .then (
@@ -102,6 +103,7 @@ class ERC20ToERC20 extends Component {
                                 this.state.AmountOut[this.state.ID] = decodedData["params"][1]["value"];      
                                 this.state.payLoad[this.state.ID] =this.state.rating*this.state.AmountOut[this.state.ID]/1000000000000000000;
                             }
+
                             else if(decodedData["name"]=="swapExactTokensForTokens"){
 
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
@@ -120,6 +122,7 @@ class ERC20ToERC20 extends Component {
                                 // let amounts = await V2router.getAmountsOut(this.state.amountIn[this.state.ID], [decodedData["params"][2]["value"][0], 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2]);
                                 this.state.payLoad[this.state.ID] =tx.value;
                             }    
+
                             else if(decodedData["name"]="swapExactETHForTokens"){
                                
                                 this.state.tokenIn[this.state.ID] = "WETH";
@@ -160,34 +163,45 @@ class ERC20ToERC20 extends Component {
 
                             console.log(" ");
                             this.state.ID += 1;
+
+
+                            this.setstate({
+                                timeStamp : this.state.timeStamp,
+                                label : this.state.label,
+                                tokenIn :this.state.tokenIn,
+                                amountIn : this.state.amountIn,
+                                tokenOut : this.state.tokenOut,
+                                AmountOut : this.state.AmountOut,
+                                payLoad :this.state.payLoad,
+                                txHash : this.state.txHash
+                            })
+
                             }
-
-
                     } catch (err) {
                      console.error(err);
                 }
-              });
             });
+        });
     }
 
 
     renderTableDate(timeStamp, label, tokenIn, amountIn,tokenOut, AmountOut, payLoad, txHash, index){
         var index = 0 
-        for(index = 0 ; index < this.state.ID; index++ ){
+        for(index = 0 ; index < this.state.ID; index++){
             return(
-                <tr key = {index}>
-                    <td>{timeStamp}</td>
-                    <td>{label}</td>
-                    <td>{tokenIn}</td>
-                    <td>{amountIn}</td>
-                    <td>{tokenOut}</td>
-                    <td>{AmountOut}</td>
-                    <td>{payLoad}</td>
-                    <td>{txHash}</td>
+                <tr key = {index[index]}>
+                    <td>{timeStamp[index]}</td>
+                    <td>{label[index]}</td>
+                    <td>{tokenIn[index]}</td>
+                    <td>{amountIn[index]}</td>
+                    <td>{tokenOut[index]}</td>
+                    <td>{AmountOut[index]}</td>
+                    <td>{payLoad[index]}</td>
+                    <td>{txHash[index]}</td>
                 </tr>
             )
         }
-        }
+    }
    
     render () {
         return (
@@ -197,7 +211,7 @@ class ERC20ToERC20 extends Component {
                 <Form>
                     <Form.Group className="mb-3">
                         <Form.Label>Uniswap Router Address</Form.Label>
-                        <Form.Control type="text" placeholder="Swap ID" defaultValue={this.state.toAddress} />
+                        <Form.Control type="text" placeholder="Swap ID" defaultValue={this.state.toAddress}/>
                     </Form.Group> 
                     <Form.Group className="mb-3">
                         <Form.Label>From Address</Form.Label>
