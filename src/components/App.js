@@ -30,7 +30,7 @@ class App extends Component {
     render () {
         return (
             <div>
-                
+                <TopNav />
                 <Tab.Container id="left-tabs-example" defaultActiveKey="first">
                 <Row>
                     <Col xs="1">
@@ -43,7 +43,7 @@ class App extends Component {
                         </Nav.Item>
                     </Nav>
                     </Col>
-                    <Col xs="11">
+                    <Col xs="10" md={{ span: 9, offset:1 }}>
                     <Tab.Content>
                         <Tab.Pane eventKey="first">
                         <Display />

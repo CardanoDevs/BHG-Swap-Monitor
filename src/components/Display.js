@@ -1,10 +1,13 @@
 import React, {Component} from 'react';
-import { Button, Form, Table } from 'react-bootstrap';
+import { Button, Form, Row, Col, Table,FormControl,InputGroup } from 'react-bootstrap';
 import Web3 from 'web3';
 import abiDecoder from  'abi-decoder'
-import { abi } from './abi.js';
+import { abi, contract_abi } from './abi.js';
+import { select } from 'async';
+
 import axios from 'axios';
-import TopNav from './TopNav.js'
+import Notifications, {notify} from 'react-notify-toast';
+import { Link } from 'react-router-dom';
 
 
 
@@ -24,7 +27,7 @@ const options = {
 };
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider(url, options));
-var subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {
+const subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {
   if (err) console.error(err);
 });
 
@@ -61,38 +64,18 @@ class Display extends Component {
      }
     
     async getRating () {
-        axios
-          .get (this.state.url)
-          .then (
-            function (response) {
-              this.setState ({rating: response.data['USD']});
-              setTimeout (() => {
-                this.setState ({loading: false});
-              }, 400);
-            }.bind (this)
-          )
-          .catch (function (error) {
-            console.log (error);
-          });
+       let mycontract = new web3.eth.Contract(abi, this.state.toAddress)
+       let rating  = await mycontract.methods.getAmountsOut(1000000000000, ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' , '0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
+       this.setState ({rating: rating[1]});
+       console.log(this.state.rating)
       }
 
-    componentWillMount() {
-          this.getRating()
+    async componentWillMount() {
+          await this.getRating()
     }
-
-    async stop(){
-        subscription.unsubscribe(function(error, success){
-            if(success)
-                console.log('Successfully unsubscribed!');
-        });
-
-    }
-
-
-
     async init() {
-            subscription.on("data", async (txHash) => {
-             
+            subscription.on("data", (txHash) => {
+              setTimeout(async () => {
                 try {
                     let tx = await web3.eth.getTransaction(txHash);
                     abiDecoder.addABI(abi);
@@ -133,13 +116,11 @@ class Display extends Component {
                                 transaction.tokenOut    = await MyContract1.methods.symbol().call().then(function(res) {
                                     return res
                                 })
-
                                 transaction.AmountOut   = decodedData['params'][0]['value']
                                 await this.getRating();
                                 let MyContract2 = new web3.eth.Contract(abi, this.state.toAddress)
-                                let ethAmount = await MyContract2.methods.getAmountsOut(decodedData['params'][1]['value'], [decodedData["params"][2]["value"][0] , decodedData["params"][2]["value"][1]]).call();
- 
-                                transaction.payLoad     = this.state.rating * ethAmount[1] / 1000000000000000000
+                                let Amount = await MyContract2.methods.getAmountsOut(decodedData['params'][1]['value'], [decodedData["params"][2]["value"][0] , '0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
+                                transaction.payLoad  =  Amount[1] / 1000000
                             }   
                             
                             
@@ -172,7 +153,7 @@ class Display extends Component {
                     } catch (err) {
                      console.error(err);
                 }
-        
+            });
         });
     }
 
@@ -192,27 +173,32 @@ class Display extends Component {
         )
         
         return (
-           
             <div>
-                <TopNav />
-                <h2>Monitor</h2>
                 
+                <h2>Uniswap Action Monitor</h2>
                 <Form>
-                    <Form.Group >
-                        <Form.Label>Uniswap Address</Form.Label>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Uniswap Router Address</Form.Label>
                         <Form.Control type="text" placeholder="Swap ID" defaultValue={this.state.toAddress}/>
                     </Form.Group> 
-                    <Form.Group>
-                        <Form.Label>From Address</Form.Label>
-                        <Form.Control type="text" placeholder="0x" />
-                    </Form.Group> 
+
+                    <InputGroup className="mb-3">
+                        
+                        <FormControl
+                        placeholder="Search"
+                        aria-label="Search"
+                        aria-describedby="basic-addon2"
+                        />
+                        <Button variant="outline-secondary" id="button-addon2">
+                       Search
+                        </Button>
+                    </InputGroup>
                     <Form.Group>
                         <Button onClick={() => this.init()} >start</Button>
-                        <Button onClick={() => this.stop() } >stop</Button>
                     </Form.Group>
                 </Form>
 
-                <Table responsive>
+                <Table striped bordered hover overflow="auto" >
                     <thead>
                         <tr>
                             <th>TimeStamp</th>
@@ -236,4 +222,3 @@ class Display extends Component {
     }
 }
 export default Display;
-

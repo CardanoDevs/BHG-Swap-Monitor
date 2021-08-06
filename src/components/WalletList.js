@@ -28,7 +28,6 @@ class WalletList extends Component {
         
         return (
             <div>
-                <TopNav />
                 <h2>Wallet List</h2>
                 <Form>
                     <Form.Group className="mb-3">
