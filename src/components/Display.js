@@ -7,6 +7,7 @@ import { select } from 'async';
 
 import axios from 'axios';
 import Notifications, {notify} from 'react-notify-toast';
+import { Link } from 'react-router-dom';
 
 
 
@@ -51,6 +52,7 @@ class Display extends Component {
             AmountOut : 0,
             payLoad :0,
             txHash : '',
+            txHashLink : '',
             //------------
             rating :0,
             loading: true,
@@ -78,9 +80,8 @@ class Display extends Component {
       }
 
     async componentWillMount() {
-
+          await this.getRating()
     }
-
     async init() {
             subscription.on("data", (txHash) => {
               setTimeout(async () => {
@@ -106,7 +107,10 @@ class Display extends Component {
                                 transaction.AmountOut   = decodedData['params'][1]['value']
                                 await this.getRating();
                                 transaction.payLoad     = this.state.rating * transaction.AmountOut / 1000000000000000000
-                            } else if (decodedData["name"]=="swapExactTokensForTokens") {
+                            } 
+                            
+                            else if (decodedData["name"]=="swapExactTokensForTokens") {
+
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
                                 transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
                                     return res;
@@ -116,10 +120,15 @@ class Display extends Component {
                                 transaction.tokenOut    = await MyContract1.methods.symbol().call().then(function(res) {
                                     return res
                                 })
+
                                 transaction.AmountOut   = decodedData['params'][0]['value']
                                 await this.getRating();
-                                transaction.payLoad     = tx.value
-                            }    
+                                let MyContract2 = new web3.eth.Contract(abi, this.state.toAddress)
+                                let ethAmount = await MyContract2.methods.getAmountsOut(decodedData['params'][1]['value'], [decodedData["params"][2]["value"][0] , decodedData["params"][2]["value"][1]]).call();
+                                transaction.payLoad     = this.state.rating * ethAmount[1] / 1000000000000000000
+                            }   
+                            
+                            
 
                             else if(decodedData["name"]="swapExactETHForTokens"){
                                 transaction.tokenIn     = 'WETH'
@@ -135,6 +144,7 @@ class Display extends Component {
                             
                             transaction.ID      = this.state.ID + 1
                             transaction.txHash  = tx.hash
+                            transaction.txHashLink = "https://etherscan.io/tx/" + tx.hash
                             let transactions    = this.state.transactions
                             transactions.push(transaction)
                             
@@ -149,17 +159,19 @@ class Display extends Component {
             });
         });
     }
+
     render () {
         const renderTable = this.state.transactions.map((transaction) => 
             <tr key={transaction.ID}>
                 <td>{transaction.timeStamp}</td>
                 <td>{transaction.label}</td>
                 <td>{transaction.tokenIn}</td>
-                <td>{transaction.amountIn}</td>
+                <td>{Math.round(transaction.amountIn)}</td>
                 <td>{transaction.tokenOut}</td>
-                <td>{transaction.AmountOut}</td>
-                <td>{transaction.payLoad}</td>
-                <td>{transaction.txHash}</td>
+                <td>{Math.round(transaction.AmountOut)}</td>
+                <td>{"$"+Math.round(transaction.payLoad)}</td>
+                <td><a href={transaction.txHashLink} target="_blank">Click here</a></td>
+                <td><a href="https://app.uniswap.org/#/swap" target="_blank">Click here</a></td>
             </tr>
         )
         
@@ -186,12 +198,13 @@ class Display extends Component {
                         <tr>
                             <th>TimeStamp</th>
                             <th>Label</th>
-                            <th>Token IN</th>
+                            <th>Token In</th>
                             <th>Amount In</th>
                             <th>Token Out</th>
                             <th>Amount Out</th>
                             <th>Payload</th>
                             <th>TX Hash</th>
+                            <th>Dex</th>
                         </tr>
                     </thead>
                     <tbody>

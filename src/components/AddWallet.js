@@ -1,12 +1,10 @@
 import React, {Component} from 'react';
-import { Button, Form, Row, Col, Table } from 'react-bootstrap';
+import { Button, Form,  Table } from 'react-bootstrap';
 import Web3 from 'web3';
 import abiDecoder from  'abi-decoder'
-import { abi, contract_abi } from './abi.js';
-import { select } from 'async';
-
+import { abi } from './abi.js';
 import axios from 'axios';
-import Notifications, {notify} from 'react-notify-toast';
+
 
 
 

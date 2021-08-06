@@ -7,7 +7,7 @@ import {
 
 import Display from './Display.js';
 import WalletList  from './WalletList.js';
-import AddList from './AddWallet.js'
+import AddWallet from './AddWallet.js'
 // import Erc20 from './Erc20.js';
 
 class Main extends Component {
@@ -23,7 +23,7 @@ class Main extends Component {
                             <WalletList/>
                         </Route>
                         <Route path = "/AddWallet">
-                            <AddList/>
+                            <AddWallet/>
                         </Route>
                     </Switch>
                 </Col>
