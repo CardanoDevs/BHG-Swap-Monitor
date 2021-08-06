@@ -96,8 +96,9 @@ class Display extends Component {
                                 label : 'john',
                                 timeStamp : new Date().toISOString(),
                             }
+                            console.log(decodedData["name"])
                             //--------------------------------------------------------------------
-                            if (decodedData["name"]=="swapExactTokensForETH"){
+                            if (decodedData["name"]=="swapExactTokensForETH"||decodedData["name"]=="swapTokensForExactETH"||decodedData["name"]=="swapExactTokensForETHSupportingFeeOnTransferTokens"){
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
                                 transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
                                     return res;
@@ -109,7 +110,8 @@ class Display extends Component {
                                 transaction.payLoad     = this.state.rating * transaction.AmountOut / 1000000000000000000
                             } 
                             
-                            else if (decodedData["name"]=="swapExactTokensForTokens") {
+
+                            else if (decodedData["name"]=="swapTokensForExactTokens"||decodedData["name"]=="swapExactTokensForTokens"||decodedData["name"]=="swapExactTokensForTokensSupportingFeeOnTransferTokens") {
 
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
                                 transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
@@ -125,12 +127,13 @@ class Display extends Component {
                                 await this.getRating();
                                 let MyContract2 = new web3.eth.Contract(abi, this.state.toAddress)
                                 let ethAmount = await MyContract2.methods.getAmountsOut(decodedData['params'][1]['value'], [decodedData["params"][2]["value"][0] , decodedData["params"][2]["value"][1]]).call();
+ 
                                 transaction.payLoad     = this.state.rating * ethAmount[1] / 1000000000000000000
                             }   
                             
                             
 
-                            else if(decodedData["name"]="swapExactETHForTokens"){
+                            else if(decodedData["name"]=="swapExactETHForTokens"||decodedData["name"]=="swapETHForExactTokens"||decodedData["name"]=="swapExactETHForTokensSupportingFeeOnTransferTokens"){
                                 transaction.tokenIn     = 'WETH'
                                 transaction.amountIn    = tx.value
                                 let MyContract  = new web3.eth.Contract(erc20abi, decodedData['params'][1]['value'][1])
@@ -142,6 +145,7 @@ class Display extends Component {
                                 transaction.payLoad     = tx.value * this.state.rating / 100000000000000000
                             }
                             
+
                             transaction.ID      = this.state.ID + 1
                             transaction.txHash  = tx.hash
                             transaction.txHashLink = "https://etherscan.io/tx/" + tx.hash
