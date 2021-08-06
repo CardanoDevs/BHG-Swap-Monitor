@@ -1,8 +1,13 @@
 import React, {Component} from 'react';
+import { Tab, Col, Row, Nav } from 'react-bootstrap';
 import TopNav from './TopNav.js';
 import Web3 from 'web3';
 import './App.css'
 import Main from './Main.js';
+
+import Display from './Display.js';
+import WalletList  from './WalletList.js';
+import AddWallet from './AddWallet.js'
 import {
     BrowserRouter as Router,
 } from "react-router-dom";
@@ -25,10 +30,31 @@ class App extends Component {
     render () {
         return (
             <div>
-                <Router>
-                    <TopNav />
-                    <Main />
-                </Router>
+                
+                <Tab.Container id="left-tabs-example" defaultActiveKey="first">
+                <Row>
+                    <Col sm={0.5}>
+                    <Nav variant="pills" className="flex-column">
+                        <Nav.Item>
+                        <Nav.Link eventKey="first">Monitor</Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                        <Nav.Link eventKey="second">Wallet List</Nav.Link>
+                        </Nav.Item>
+                    </Nav>
+                    </Col>
+                    <Col sm={11.5}>
+                    <Tab.Content>
+                        <Tab.Pane eventKey="first">
+                        <Display />
+                        </Tab.Pane>
+                        <Tab.Pane eventKey="second">
+                        <WalletList />
+                        </Tab.Pane>
+                    </Tab.Content>
+                    </Col>
+                </Row>
+                </Tab.Container>
             </div>
         );
     }
