@@ -1,13 +1,10 @@
 import React, {Component} from 'react';
-import { Button, Form, Row, Col, Table } from 'react-bootstrap';
+import { Button, Form, Table } from 'react-bootstrap';
 import Web3 from 'web3';
 import abiDecoder from  'abi-decoder'
-import { abi, contract_abi } from './abi.js';
-import { select } from 'async';
-
+import { abi } from './abi.js';
 import axios from 'axios';
-import Notifications, {notify} from 'react-notify-toast';
-import { Link } from 'react-router-dom';
+import TopNav from './TopNav.js'
 
 
 
@@ -27,7 +24,7 @@ const options = {
 };
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider(url, options));
-const subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {
+var subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {
   if (err) console.error(err);
 });
 
@@ -63,7 +60,7 @@ class Display extends Component {
          }
      }
     
-    getRating () {
+    async getRating () {
         axios
           .get (this.state.url)
           .then (
@@ -79,12 +76,23 @@ class Display extends Component {
           });
       }
 
-    async componentWillMount() {
-          await this.getRating()
+    componentWillMount() {
+          this.getRating()
     }
+
+    async stop(){
+        subscription.unsubscribe(function(error, success){
+            if(success)
+                console.log('Successfully unsubscribed!');
+        });
+
+    }
+
+
+
     async init() {
-            subscription.on("data", (txHash) => {
-              setTimeout(async () => {
+            subscription.on("data", async (txHash) => {
+             
                 try {
                     let tx = await web3.eth.getTransaction(txHash);
                     abiDecoder.addABI(abi);
@@ -164,7 +172,7 @@ class Display extends Component {
                     } catch (err) {
                      console.error(err);
                 }
-            });
+        
         });
     }
 
@@ -184,24 +192,27 @@ class Display extends Component {
         )
         
         return (
+           
             <div>
+                <TopNav />
+                <h2>Monitor</h2>
                 
-                <h2>Uniswap Action tracking</h2>
                 <Form>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Uniswap Router Address</Form.Label>
+                    <Form.Group >
+                        <Form.Label>Uniswap Address</Form.Label>
                         <Form.Control type="text" placeholder="Swap ID" defaultValue={this.state.toAddress}/>
                     </Form.Group> 
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label>From Address</Form.Label>
                         <Form.Control type="text" placeholder="0x" />
                     </Form.Group> 
                     <Form.Group>
                         <Button onClick={() => this.init()} >start</Button>
+                        <Button onClick={() => this.stop() } >stop</Button>
                     </Form.Group>
                 </Form>
 
-                <Table striped bordered hover>
+                <Table responsive>
                     <thead>
                         <tr>
                             <th>TimeStamp</th>

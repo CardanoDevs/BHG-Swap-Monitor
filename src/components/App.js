@@ -3,7 +3,7 @@ import { Tab, Col, Row, Nav } from 'react-bootstrap';
 import TopNav from './TopNav.js';
 import Web3 from 'web3';
 import './App.css'
-import Main from './Main.js';
+
 
 import Display from './Display.js';
 import WalletList  from './WalletList.js';
@@ -33,7 +33,7 @@ class App extends Component {
                 
                 <Tab.Container id="left-tabs-example" defaultActiveKey="first">
                 <Row>
-                    <Col sm={0.5}>
+                    <Col xs="1">
                     <Nav variant="pills" className="flex-column">
                         <Nav.Item>
                         <Nav.Link eventKey="first">Monitor</Nav.Link>
@@ -43,7 +43,7 @@ class App extends Component {
                         </Nav.Item>
                     </Nav>
                     </Col>
-                    <Col sm={11.5}>
+                    <Col xs="11">
                     <Tab.Content>
                         <Tab.Pane eventKey="first">
                         <Display />
