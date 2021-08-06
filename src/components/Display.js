@@ -87,9 +87,12 @@ class Display extends Component {
               setTimeout(async () => {
                 try {
                     let tx = await web3.eth.getTransaction(txHash);
+                    abiDecoder.addABI(abi);
+                    const decodedData = abiDecoder.decodeMethod(tx.input);
                         if(tx.to == this.state.toAddress) {
-                            abiDecoder.addABI(abi);
-                            const decodedData = abiDecoder.decodeMethod(tx.input);
+                            if(decodedData["name"]=="swapExactTokensForETH"||decodedData["name"]=="swapTokensForExactETH"||decodedData["name"]=="swapExactTokensForETHSupportingFeeOnTransferTokens"||
+                               decodedData["name"]=="swapTokensForExactTokens"||decodedData["name"]=="swapExactTokensForTokens"||decodedData["name"]=="swapExactTokensForTokensSupportingFeeOnTransferTokens"||
+                               decodedData["name"]=="swapExactETHForTokens"||decodedData["name"]=="swapETHForExactTokens"||decodedData["name"]=="swapExactETHForTokensSupportingFeeOnTransferTokens"){
 
                             let transaction = {
                                 fromAddress : tx.from,
@@ -157,6 +160,7 @@ class Display extends Component {
                                 transactions : transactions
                             })
                         }
+                    }
                     } catch (err) {
                      console.error(err);
                 }
