@@ -170,8 +170,8 @@ class Display extends Component {
                 <td>{transaction.tokenOut}</td>
                 <td>{Math.round(transaction.AmountOut)}</td>
                 <td>{"$"+Math.round(transaction.payLoad)}</td>
-                <td><a href={transaction.txHashLink} target="_blank">Click here</a></td>
-                <td><a href="https://app.uniswap.org/#/swap" target="_blank">Click here</a></td>
+                <td><a href={transaction.txHashLink} target="_blank">{transaction.txHash}</a></td>
+                <td><a href="https://app.uniswap.org/#/swap" target="_blank">Go to Uniswap</a></td>
             </tr>
         )
         
