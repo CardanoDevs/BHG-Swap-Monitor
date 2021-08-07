@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
-import { Button, Form, Table,FormControl,InputGroup } from 'react-bootstrap';
+import { Button, Form, Row, Col, InputGroup, FormControl} from 'react-bootstrap';
 import Web3 from 'web3';
 import abiDecoder from  'abi-decoder'
-import { abi } from './abi.js';
+import { abi ,contract_abi} from './abi.js';
 import  './Display.css';
-import { MDBDataTable } from 'mdbreact';
+import { MDBDataTable   } from 'mdbreact';
 
 
 
@@ -46,8 +46,10 @@ class Display extends Component {
             timeStamp : 0,
             label : '',
             tokenIn : '',
+            tokenInAddress: '',
             amountIn : 0,
             tokenOut : '',
+            tokenOutAddress : '',
             amountOut : 0,
             payLoad :0,
             txHash : '',
@@ -59,20 +61,16 @@ class Display extends Component {
             //------------
             transactions : [],
          }
-         this.setKeyword    = this.setKeyword.bind(this)
+
      }
     
     async getRating () {
        let mycontract = new web3.eth.Contract(abi, this.state.toAddress)
-       let rating  = await mycontract.methods.getAmountsOut(1000000000000, ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' , '0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
+       let rating  = await mycontract.methods.getAmountsOut(1000000000000, ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2','0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
        this.setState ({rating: rating[1]});
       }
-    setKeyword(e) {
-        const keyword   = e.target.value
-        this.setState({
-            keyword :  keyword
-        })
-    }
+
+
     async componentWillMount() {
           await this.getRating()
     }
@@ -84,10 +82,14 @@ class Display extends Component {
                     abiDecoder.addABI(abi);
                     var decodedData = abiDecoder.decodeMethod(tx.input);
                         if(tx.to == this.state.toAddress) {
-                            //    if(decodedData["name"]=="swapExactTokensForTokens"||decodedData["name"]=="swapExactTokensForTokensSupportingFeeOnTransferTokens")
+                              
+                               
                                if(decodedData["name"]=="swapExactTokensForETH"||decodedData["name"]=="swapTokensForExactETH"||decodedData["name"]=="swapExactTokensForETHSupportingFeeOnTransferTokens"||
                                decodedData["name"]=="swapTokensForExactTokens"||decodedData["name"]=="swapExactTokensForTokens"||decodedData["name"]=="swapExactTokensForTokensSupportingFeeOnTransferTokens"||
                                decodedData["name"]=="swapExactETHForTokens"||decodedData["name"]=="swapETHForExactTokens"||decodedData["name"]=="swapExactETHForTokensSupportingFeeOnTransferTokens")
+  
+                            
+
                                {
                             let transaction = {
                                 fromAddress : tx.from,
@@ -95,9 +97,9 @@ class Display extends Component {
                                 timeStamp : new Date().toISOString(),
                             }
 
-
-                            console.log(decodedData["name"])
-                            //--------------------------------------------------------------------
+                             console.log(decodedData["name"])
+                             console.log(tx.hash)
+                            //----------------------------TokenforETH----------------------------------------
                             if (decodedData["name"]=="swapExactTokensForETH"||decodedData["name"]=="swapExactTokensForETHSupportingFeeOnTransferTokens"){
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
                                 transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
@@ -110,6 +112,7 @@ class Display extends Component {
                                 await this.getRating();
                                 transaction.payLoad     = this.state.rating * transaction.amountOut
                             } 
+
                             else if (decodedData["name"]=="swapTokensForExactETH"){
                                 let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
                                 transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
@@ -123,28 +126,66 @@ class Display extends Component {
                                 transaction.payLoad     = this.state.rating * transaction.amountOut
                             } 
 
-
-                            //------------------------------------------------------------------------------------------------------------------------------
-                            else if (decodedData["name"]=="swapExactTokensForTokens"||decodedData["name"]=="swapExactTokensForTokensSupportingFeeOnTransferTokens") {
-
+                            //-----------------------------------TokenForToken-------------------------------------------------------------------------------------------
+                            else if (decodedData["name"]=="swapExactTokensForTokensSupportingFeeOnTransferTokens") {
                                 let MyContract =      await new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
                                 transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
                                     return res;
                                 })
-
                                 transaction.tokenIn_Decimals = await MyContract.methods.decimals().call()
                                 transaction.amountIn    = decodedData['params'][0]['value'] /Math.pow(10,transaction.tokenIn_Decimals)
+                                let MyContract1         = new web3.eth.Contract(erc20abi, decodedData['params'][2]['value'][(decodedData['params'][2]['value'].length)-1])
+                                transaction.tokenOut    = await MyContract1.methods.symbol().call().then(function(res) {
+                                    return res
+                                })                               
+                                transaction.TokenOut_Decimals = await MyContract1.methods.decimals().call()
+                                transaction.amountOut   = decodedData['params'][1]['value'] / (Math.pow(10,transaction.TokenOut_Decimals))
+                                
+                                if(transaction.tokenIn == "WETH"||transaction.tokenIn =="WBTC"||transaction.tokenOut == "WETH"||transaction.tokenOut =="WBTC"){
+                                    return
+                                }
 
-                                let MyContract1         = new web3.eth.Contract(erc20abi, decodedData['params'][2]['value'][decodedData['params'][2]['value'].length - 1])
+                                if (transaction.tokenIn == "USDC"||transaction.tokenIn =="USDT"){
+                                    transaction.payLoad  =  transaction.amountIn
+                                }
+                                else if (transaction.tokenOut == "USDC"||transaction.tokenOut == "USDT"){
+                                    transaction.payLoad  =  transaction.amountOut
+                                }  
+                                else{
+                                    transaction.payLoad  =  "";
+                                }
+
+                            }  
+                            else if (decodedData["name"]=="swapExactTokensForTokens") {
+                                let MyContract =      await new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
+                            
+                                transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
+                                    return res;
+                                })
+                                transaction.tokenIn_Decimals = await MyContract.methods.decimals().call()
+                                transaction.amountIn    = decodedData['params'][0]['value'] /Math.pow(10,transaction.tokenIn_Decimals)
+                                let MyContract1         = new web3.eth.Contract(erc20abi, decodedData['params'][2]['value'][(decodedData['params'][2]['value'].length)-1])
                                 transaction.tokenOut    = await MyContract1.methods.symbol().call().then(function(res) {
                                     return res
                                 })
                                 transaction.TokenOut_Decimals = await MyContract1.methods.decimals().call()
-                                transaction.amountOut   = decodedData['params'][1]['value'] / Math.pow(10,transaction.tokenOut_Decimals)
-                                await this.getRating();
-                                let MyContract2 = new web3.eth.Contract(abi, this.state.toAddress)
-                                let Amount = await MyContract2.methods.getAmountsOut(transaction.amountIn, [decodedData["params"][2]["value"][0] , '0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
-                                transaction.payLoad  =  Amount[1] / 1000000 * transaction.tokenIn_Decimals
+                                transaction.amountOut   = decodedData['params'][1]['value'] / (Math.pow(10,transaction.TokenOut_Decimals))
+
+                                if(transaction.tokenIn == "WETH"||transaction.tokenIn =="WBTC"||transaction.tokenOut == "WETH"||transaction.tokenOut =="WBTC"){
+                                    return
+                                }
+
+                                if (transaction.tokenIn == "USDC"||transaction.tokenIn =="USDT"){
+                                    transaction.payLoad  =  transaction.amountIn
+                                }
+                                else if (transaction.tokenOut == "USDC"||transaction.tokenOut == "USDT"){
+                                    transaction.payLoad  =  transaction.amountOut
+                                }
+                                else{
+                                    transaction.payLoad  =  "";
+                                }
+                               
+
                             }  
                             
 
@@ -154,19 +195,28 @@ class Display extends Component {
                                 transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
                                     return res;
                                 })
-
                                 transaction.tokenIn_Decimals = await MyContract.methods.decimals().call()
                                 transaction.amountIn    = decodedData['params'][1]['value'] / Math.pow(10,transaction.tokenIn_Decimals)
-                                let MyContract1         = new web3.eth.Contract(erc20abi, decodedData['params'][2]['value'][2])
+                                let MyContract1         = new web3.eth.Contract(erc20abi, decodedData['params'][2]['value'][(decodedData['params'][2]['value'].length)-1])
                                 transaction.tokenOut    = await MyContract1.methods.symbol().call().then(function(res) {
                                     return res
                                 })
                                 transaction.TokenOut_Decimals = await MyContract1.methods.decimals().call()
-                                transaction.amountOut   = decodedData['params'][0]['value'] / Math.pow(10,transaction.tokenOut_Decimals)
-                                await this.getRating();
-                                let MyContract2 = new web3.eth.Contract(abi, this.state.toAddress)
-                                let Amount = await MyContract2.methods.getAmountsOut(decodedData['params'][0]['value'], [decodedData["params"][2]["value"][2] , '0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
-                                transaction.payLoad  =  Amount[1] / 1000000 * transaction.tokenOut_Decimals
+                                transaction.amountOut   = decodedData['params'][0]['value'] / Math.pow(10,transaction.TokenOut_Decimals)
+
+                                if(transaction.tokenIn == "WETH"||transaction.tokenIn =="WBTC"||transaction.tokenOut == "WETH"||transaction.tokenOut =="WBTC"){
+                                    return
+                                }
+                                if (transaction.tokenIn == "USDC"||transaction.tokenIn =="USDT"){
+                                    transaction.payLoad  =  transaction.amountIn
+                                }
+                                else if (transaction.tokenOut == "USDC"||transaction.tokenOut == "USDT"){
+                                    transaction.payLoad  =  transaction.amountOut
+                                }
+                                else{
+                                    transaction.payLoad  =  "";
+                                }
+                    
                             }   
                                                        
                             else if(decodedData["name"]=="swapExactETHForTokens"||decodedData["name"]=="swapETHForExactTokens"||decodedData["name"]=="swapExactETHForTokensSupportingFeeOnTransferTokens"){
@@ -184,15 +234,15 @@ class Display extends Component {
                                 transaction.payLoad     = transaction.amountIn   * this.state.rating
                             }
                             
-                            transaction.ID      = this.state.ID + 1
-                            transaction.txHash  = tx.hash
-                            transaction.amountIn = Math.round(transaction.amountIn * 100000) / 100000
+                            transaction.ID        = this.state.ID + 1
+                            transaction.txHash    = tx.hash
+                            transaction.amountIn  = Math.round(transaction.amountIn * 100000) / 100000
                             transaction.amountOut = Math.round(transaction.amountOut * 100000) / 100000
                             transaction.payLoad   = "$"+Math.round(transaction.payLoad * 100)/ 100
+                            
                             let transactions    = this.state.transactions
                             
                             transactions.push(transaction)
-
                             this.setState(transaction);
                             this.setState({
                                 transactions : transactions
@@ -200,6 +250,7 @@ class Display extends Component {
                         }
                     }
                         } catch (err) {
+
                
                 }
             });
@@ -214,6 +265,7 @@ class Display extends Component {
         })
         const data = {
             columns : [
+                
                 {
                     label : 'Timestamp',
                     field : 'timeStamp',
@@ -255,16 +307,28 @@ class Display extends Component {
         }
         return (
             <div>
-                <h2>Uniswap Action Monitor</h2>
-                <Form>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Uniswap Router Address</Form.Label>
-                        <Form.Control type="text" placeholder="Swap ID" defaultValue={this.state.toAddress}/>
-                    </Form.Group>
-                    <Form.Group>
-                        <Button onClick={() => this.init()} >start</Button>
-                    </Form.Group>
-                </Form>
+
+                        <h2>Uniswap Action Monitor</h2>
+                        <br/>
+                        <hr/>
+
+                
+
+
+            <InputGroup className="mb-2">
+                        <FormControl
+                            placeholder={this.state.toAddress}
+                            aria-label="Swap Address"
+                            aria-describedby="basic-addon2"
+                        />
+
+                        <Button variant="primary" id="button-addon2" onClick={()=>this.init()}>
+                            Start Scripting & Monitor
+                        </Button>
+            </InputGroup>
+                
+
+                <br/>
                 <MDBDataTable 
                     striped
                     bordered
