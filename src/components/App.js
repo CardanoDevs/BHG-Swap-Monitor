@@ -5,7 +5,7 @@ import Web3 from 'web3';
 import './App.css'
 
 
-import Display from './Display.js';
+import Display from './Display.jsx';
 import WalletList  from './WalletList.js';
 import AddWallet from './AddWallet.js'
 import {

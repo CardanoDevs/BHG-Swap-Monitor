@@ -5,23 +5,21 @@ import TopNav from './TopNav.js'
 
 
 
-const url = "wss://ancient-proud-sky.quiknode.pro/448fa0f4002c4f02ba95c5a1f77c1c2bfa343bd5/";
-const options = {
-  timeout: 30000,
-  clientConfig: {
-    maxReceivedFrameSize: 100000000,
-    maxReceivedMessageSize: 100000000,
-  },
-  reconnect: {
-    auto: true,
-    delay: 5000,
-    maxAttempts: 15,
-    onTimeout: false,
-  },
-};
-
 
 class WalletList extends Component {
+
+    constructor(props) {
+        super(props)
+        this.state = {
+
+            WallList : []
+            
+        }
+
+    }
+
+
+
     render () {
        
         
