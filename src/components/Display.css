@@ -15,11 +15,11 @@
   text-align: center;
 }
 
-.toaddress{
+.address_text{
   width : 50%;
-
 }
 
-.button{
+.start_button{
   width:50%;
+  right : 0;
 }

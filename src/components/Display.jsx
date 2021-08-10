@@ -307,36 +307,30 @@ class Display extends Component {
         }
         return (
             <div>
-
-                        <h2>Uniswap Action Monitor</h2>
-                        <br/>
-                        <hr/>
-
-                
-
-
+            <h2>MONITORED DEX SWAPS</h2>
+            <hr/><br/><br/>
             <InputGroup className="mb-2">
-                        <FormControl
-                            placeholder={this.state.toAddress}
-                            aria-label="Swap Address"
-                            aria-describedby="basic-addon2"
-                        />
-
-                        <Button variant="primary" id="button-addon2" onClick={()=>this.init()}>
-                            Start Scripting & Monitor
-                        </Button>
-            </InputGroup>
-                
-
-                <br/>
-                <MDBDataTable 
-                    striped
-                    bordered
-                    small
-                    data={
-                        data
-                    }
+                <InputGroup.Text id="basic-addon3">
+                    Uniswap Router Address
+                </InputGroup.Text>
+                <FormControl
+                    placeholder={this.state.toAddress}
+                    aria-label="Swap Address"
+                    aria-describedby="basic-addon2"
                 />
+                <Button variant="primary" id="button-addon2" onClick={()=>this.init()}>
+                    Start Scripting & Monitor
+                </Button>
+            </InputGroup>
+            <br/>
+            <MDBDataTable 
+                striped
+                bordered
+                small
+                data={
+                    data
+                }
+            />
             </div>
         );
     }
