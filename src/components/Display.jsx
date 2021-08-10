@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
-import { Button, Form, Row, Col, InputGroup, FormControl} from 'react-bootstrap';
+import { Button,InputGroup, FormControl} from 'react-bootstrap';
 import Web3 from 'web3';
 import abiDecoder from  'abi-decoder'
-import { abi ,contract_abi} from './abi.js';
+import { abi } from './abi.js';
 import  './Display.css';
 import { MDBDataTable   } from 'mdbreact';
 

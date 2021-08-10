@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {Container, Navbar,} from 'react-bootstrap';
-import { MDBDataTable ,MDBIcon} from 'mdbreact';
+import { Navbar,} from 'react-bootstrap';
+import { MDBIcon} from 'mdbreact';
 
 
 
