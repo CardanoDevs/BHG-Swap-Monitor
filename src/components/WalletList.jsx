@@ -5,13 +5,13 @@ import { database, storage, auth } from './firebase/firebase';
 
 const flag = true;
 
-class WalletList extends Component {
 
+class WalletList extends Component {
 
     constructor(props) {
         super(props)
         this.state = {
-            walletLists : []
+            walletLists : [],
         }
     }
 
@@ -35,11 +35,16 @@ class WalletList extends Component {
                         })
                     })
                 }
+
                 this.setState({
                 walletLists : walletList
               })
             }
         });
+    }
+
+    onReload = () => {
+          this.Init()
     }
 
     render () {
@@ -77,10 +82,8 @@ class WalletList extends Component {
             <div>
                 <h2>MY WALLET LIST</h2>
                 <hr/><br/><br/>
-                
-                <Example walletData = {this.state.walletLists}/>
+                <Example onReload={this.onReload} walletData = {this.state.walletLists}/>
                 <br/><br/>
-                
                 <MDBDataTable
                 striped
                 bordered
@@ -90,39 +93,41 @@ class WalletList extends Component {
             </div>
         );
     }
-
-
-
-    
 }
+
 
 
 export default WalletList;
 
 
-function Example() {
+function Example(props) {
 
   var  addLabel = ''
   var  addAddress = ''
+
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+
   const addwallet = () =>{
+
       console.log(addLabel)
       console.log(addAddress)
-    
       setShow(false)
-
       const walletList= {
         Label   : addLabel,
         Address : addAddress,
         Action : '<button>Edit</button><button>delete</button>'
       }
-      
       var userListRef = database.ref('wallet')
       var newUserRef = userListRef.push();
       newUserRef.set(walletList);
+      props.onReload();
+
+
   }
+
   const handleAddress = (e) => {
     addAddress  = e.target.value
   }
