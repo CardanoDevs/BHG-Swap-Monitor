@@ -31,6 +31,7 @@ class WalletList extends Component {
                             id: index,
                             Address : value.Address,
                             Label   : value.Label,
+                            Action  : value.Action
                         })
                     })
                 }
@@ -109,12 +110,15 @@ function Example() {
   const addwallet = () =>{
       console.log(addLabel)
       console.log(addAddress)
-      console.log(this.pro)
+    
       setShow(false)
+
       const walletList= {
         Label   : addLabel,
-        Address : addAddress
+        Address : addAddress,
+        Action : '<button>Edit</button><button>delete</button>'
       }
+      
       var userListRef = database.ref('wallet')
       var newUserRef = userListRef.push();
       newUserRef.set(walletList);
