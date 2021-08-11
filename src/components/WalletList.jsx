@@ -1,7 +1,7 @@
-import React, {Component, useState, handleShow} from 'react';
-import { InputGroup, FormControl, Button, Modal } from 'react-bootstrap';
+import React, {Component, useState} from 'react';
+import { InputGroup, FormControl, Button, Modal} from 'react-bootstrap';
 import { MDBDataTable } from 'mdbreact';
-import { database, storage, auth } from './firebase/firebase';
+import { database,  auth } from './firebase/firebase';
 
 const flag = true;
 
@@ -29,13 +29,12 @@ class WalletList extends Component {
                         const value = newArray[key];
                         walletList.push({
                             id: index,
+                            key,
                             Address : value.Address,
                             Label   : value.Label,
-                            Action  : value.Action
                         })
                     })
                 }
-
                 this.setState({
                 walletLists : walletList
               })
@@ -43,12 +42,26 @@ class WalletList extends Component {
         });
     }
 
+
+
     onReload = () => {
           this.Init()
     }
 
+    deleteWalletList(id){
+      console.log(id)
+      database.ref('wallet/' + id).remove();
+      this.Init(); 
+    }
+
     render () {
-      const rows = this.state.walletLists
+      const rows = this.state.walletLists.map((walletList) => {
+        walletList.Actions =  <div>
+                                   <Button variant="outline-danger"  size = "sm" onClick={()=>this.deleteWalletList(walletList.key)}> Delete</Button>{' '}
+                              </div>
+        return walletList
+      })
+
         const data = {
             columns: [
               {
@@ -71,7 +84,7 @@ class WalletList extends Component {
               },
               {
                 label: 'Actions',
-                field: 'age',
+                field: 'Actions',
                 sort: 'asc',
                 width: 100
               }
@@ -96,25 +109,18 @@ class WalletList extends Component {
 }
 
 
-
 export default WalletList;
-
-
 function Example(props) {
-
   var  addLabel = ''
   var  addAddress = ''
-
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-
   const addwallet = () =>{
+     
+    setShow(false)
 
-      console.log(addLabel)
-      console.log(addAddress)
-      setShow(false)
       const walletList= {
         Label   : addLabel,
         Address : addAddress,
@@ -124,7 +130,6 @@ function Example(props) {
       var newUserRef = userListRef.push();
       newUserRef.set(walletList);
       props.onReload();
-
 
   }
 

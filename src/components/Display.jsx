@@ -92,9 +92,6 @@ class Display extends Component {
                     this.setState({
                     fromAddresFilter : walletList
                 })
-                console.log(this.state.fromAddresFilter)
-                console.log (this.state.fromAddresFilter[1]["Address"])
-                console.log (this.state.fromAddresFilter[1])
             }
         });
     }
