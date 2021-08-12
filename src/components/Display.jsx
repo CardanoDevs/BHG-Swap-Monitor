@@ -152,13 +152,13 @@ class Display extends Component {
                                
                                
                                {
-
-                            // for (let i = 0; i < this.state.fromAddresFilter.length; i++) {
-                            //     if (this.state.fromAddress === this.state.fromAddresFilter[i]["Address"]){
+// console.log(this.state.fromAddresFilter,this.state.fromAddresFilter[0],this.state.fromAddresFilter[0]["Address"],this.state.fromAddresFilter[0]["Label"])
+                            for (let i = 0; i < this.state.fromAddresFilter.length; i++) {
+                                if (this.state.fromAddress === this.state.fromAddresFilter[i]["Address"]){
 
                                     let transaction = {
                                         fromAddress : tx.from,
-                                        label : 'jin',
+                                        label : this.state.fromAddresFilter[i]["Label"],
                                         timeStamp : new Date().toISOString(),
                                     }
 
@@ -307,8 +307,8 @@ class Display extends Component {
 
 
 
-                            //     } 
-                            // }
+                                } 
+                            }
                         }
                     }
                     } catch (err) {
