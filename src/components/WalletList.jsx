@@ -22,6 +22,7 @@ class WalletList extends Component {
           });
         }
     }
+    
     async componentWillMount() {
       await this.Init()
     }
@@ -47,9 +48,11 @@ class WalletList extends Component {
             }
         });
     }
+
     onReload = () => {
-          this.Init()
+      this.Init()
     }
+
     closeModal(){
       console.log("close")
     }
@@ -120,7 +123,7 @@ class WalletList extends Component {
                               </div>
         return walletList
       })
-        const data = {
+          const data = {
             columns: [
               {
                 label: 'WalletID',
@@ -177,7 +180,6 @@ class WalletList extends Component {
                 small
                 data={data}
                  />
-
                 <Modal show = {this.state.show}> 
                   <Modal.Header closeButton>
                     <Modal.Title>Add Wallet</Modal.Title>
@@ -192,7 +194,6 @@ class WalletList extends Component {
                     onChange={handlePrevAddress}
                     placeholder="0x"/>
                   </InputGroup>
-
                   <InputGroup className="mb-3">
                     <InputGroup.Text id="basic-addon3">
                       Label 
@@ -212,15 +213,11 @@ class WalletList extends Component {
                     </Button>
                   </Modal.Footer>
                 </Modal>
-
             </div>
         );
     }
   }
 export default WalletList;
-
-
-
 
 
 

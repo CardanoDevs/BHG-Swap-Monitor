@@ -9,6 +9,7 @@ import { database } from './firebase/firebase'
 
 
 
+
 const url = "wss://ancient-proud-sky.quiknode.pro/448fa0f4002c4f02ba95c5a1f77c1c2bfa343bd5/";
 export var rendertable;
 const options = {
@@ -27,8 +28,8 @@ const options = {
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider(url, options));
 var subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {
-
 });
+
 
 const erc20abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"guy","type":"address"},{"name":"wad","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"src","type":"address"},{"name":"dst","type":"address"},{"name":"wad","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"wad","type":"uint256"}],"name":"withdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dst","type":"address"},{"name":"wad","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"guy","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Deposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Withdrawal","type":"event"}]
 
@@ -65,22 +66,24 @@ class Display extends Component {
             transactions : [],
             subscriptingstate : false
          }
-
      }
     
+
     async getRating () {
        let mycontract = new web3.eth.Contract(abi, this.state.toAddress)
        let rating  = await mycontract.methods.getAmountsOut(1000000000000, ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2','0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
        this.setState ({rating: rating[1]});
-       
-
-      }
+    }
 
 
     async componentWillMount() {
-          await this.getRating()
+        console.log()
+        await this.getRating()
+        this.loadFilterAddress()
+    }
 
-          database.ref('wallet/').get().then((snapshot) => {
+    loadFilterAddress(){
+        database.ref('wallet/').get().then((snapshot) => {
             if (snapshot.exists) {
                 var walletList = [];
                     const newArray = snapshot.val();
@@ -95,12 +98,10 @@ class Display extends Component {
                     }
                     this.setState({
                     fromAddresFilter : walletList
-                })
-                // console.log(this.state.fromAddresFilter,this.state.fromAddresFilter[1]['Address'] )
-            }
-        });
+                      })
+                 }
+             });
     }
-
 
     async load(){
         database.ref('transactions/').get().then((snapshot) => {
@@ -129,7 +130,8 @@ class Display extends Component {
     }
 
 
-    async init() {
+    async init() {  
+           this.loadFilterAddress();
             this.setState({
                 subscriptingstate : true
             })
@@ -145,14 +147,11 @@ class Display extends Component {
                     var decodedData = abiDecoder.decodeMethod(tx.input);
                         if(tx.to === this.state.toAddress) {   
                                 // let buffer = ture
-
                                if(decodedData["name"]==="swapExactTokensForETH"||decodedData["name"]==="swapTokensForExactETH"||decodedData["name"]==="swapExactTokensForETHSupportingFeeOnTransferTokens"||
                                decodedData["name"]==="swapTokensForExactTokens"||decodedData["name"]==="swapExactTokensForTokens"||decodedData["name"]==="swapExactTokensForTokensSupportingFeeOnTransferTokens"||
                                decodedData["name"]==="swapExactETHForTokens"||decodedData["name"]==="swapETHForExactTokens"||decodedData["name"]==="swapExactETHForTokensSupportingFeeOnTransferTokens")    
                                
-                               
                                {
-// console.log(this.state.fromAddresFilter,this.state.fromAddresFilter[0],this.state.fromAddresFilter[0]["Address"],this.state.fromAddresFilter[0]["Label"])
                             for (let i = 0; i < this.state.fromAddresFilter.length; i++) {
                                 if (this.state.fromAddress === this.state.fromAddresFilter[i]["Address"]){
 
@@ -304,9 +303,6 @@ class Display extends Component {
                                     var userListRef = database.ref('transactions')
                                     var newUserRef = userListRef.push();
                                     newUserRef.set(Insert_transaction);
-
-
-
                                 } 
                             }
                         }
@@ -318,14 +314,13 @@ class Display extends Component {
     }
 
     async stop(){
+        this.loadFilterAddress();
         console.log("this is a stop fun")
         this.setState({
             subscriptingstate : false
         })
-
     }
 
-    
     render () {
       var rows = []
     if(this.state.toAddress == 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D){
@@ -334,7 +329,6 @@ class Display extends Component {
             transaction.txHashLink  = <a href={"https://etherscan.io/tx/" + transaction.txHash} target="_blank">Click Here</a>
             return transaction
         })
-
     }
     if(this.state.toAddress == 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F){
         rows  = this.state.transactions.map((transaction) => {
@@ -342,9 +336,10 @@ class Display extends Component {
             transaction.txHashLink  = <a href={"https://etherscan.io/tx/" + transaction.txHash} target="_blank">Click Here</a>
             return transaction
         })
-
     }
-        const data = {
+
+
+    const data = {
             columns : [
                 
                 {
@@ -385,17 +380,17 @@ class Display extends Component {
                 },
             ],
             rows : rows,
-        }
-        const handleRouterAddress = (e) => {
+    }
+    const handleRouterAddress = (e) => {
             let toAddress  = e.target.value
             this.setState({
               toAddress : toAddress
             })
             console.log(this.state.toAddress)
-          }
+    }
         
 
-        return (
+    return (
             <div>
             <h2>MONITORED DEX SWAPS</h2>
             <hr/><br/><br/>
