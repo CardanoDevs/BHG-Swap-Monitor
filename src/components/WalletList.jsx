@@ -3,10 +3,7 @@ import { InputGroup, FormControl, Button, Modal} from 'react-bootstrap';
 import { MDBDataTable } from 'mdbreact';
 import { database,  auth } from './firebase/firebase';
 
-
-
 class WalletList extends Component {
-
     constructor(props) {
         super(props)
         this.state = {
@@ -19,18 +16,15 @@ class WalletList extends Component {
             walletLists : [],
             show : false,
         }
-
         this.closeModal = e =>{
           this.setState({
             show: false
           });
         }
     }
-
     async componentWillMount() {
       await this.Init()
     }
-
     Init(){
         database.ref('wallet/').get().then((snapshot) => {
             if (snapshot.exists) {
@@ -53,11 +47,9 @@ class WalletList extends Component {
             }
         });
     }
-
     onReload = () => {
           this.Init()
     }
-
     closeModal(){
       console.log("close")
     }

@@ -32,6 +32,9 @@ var subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {
 
 const erc20abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"guy","type":"address"},{"name":"wad","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"src","type":"address"},{"name":"dst","type":"address"},{"name":"wad","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"wad","type":"uint256"}],"name":"withdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dst","type":"address"},{"name":"wad","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"guy","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Deposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Withdrawal","type":"event"}]
 
+//0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F  sushiswap
+//0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D  uniswap
+
 
 class Display extends Component {
      
@@ -60,6 +63,7 @@ class Display extends Component {
             rating :0,
             //------------
             transactions : [],
+            subscriptingstate : false
          }
 
      }
@@ -126,24 +130,35 @@ class Display extends Component {
 
 
     async init() {
+            this.setState({
+                subscriptingstate : true
+            })
             subscription.on("data", (txHash) => {
               setTimeout(async () => {
+                if(this.state.subscriptingstate == false){
+                    return
+                }
                 try {
+                    console.log("111")
                     let tx = await web3.eth.getTransaction(txHash);
                     abiDecoder.addABI(abi);
                     var decodedData = abiDecoder.decodeMethod(tx.input);
                         if(tx.to === this.state.toAddress) {   
+                                // let buffer = ture
+
                                if(decodedData["name"]==="swapExactTokensForETH"||decodedData["name"]==="swapTokensForExactETH"||decodedData["name"]==="swapExactTokensForETHSupportingFeeOnTransferTokens"||
                                decodedData["name"]==="swapTokensForExactTokens"||decodedData["name"]==="swapExactTokensForTokens"||decodedData["name"]==="swapExactTokensForTokensSupportingFeeOnTransferTokens"||
                                decodedData["name"]==="swapExactETHForTokens"||decodedData["name"]==="swapETHForExactTokens"||decodedData["name"]==="swapExactETHForTokensSupportingFeeOnTransferTokens")    
+                               
+                               
                                {
 
-                            for (let i = 0; i < this.state.fromAddresFilter.length; i++) {
-                                if (this.state.fromAddress === this.state.fromAddresFilter[i]["Address"]){
+                            // for (let i = 0; i < this.state.fromAddresFilter.length; i++) {
+                            //     if (this.state.fromAddress === this.state.fromAddresFilter[i]["Address"]){
 
                                     let transaction = {
                                         fromAddress : tx.from,
-                                        label : this.state.fromAddresFilter["Label"][i],
+                                        label : 'jin',
                                         timeStamp : new Date().toISOString(),
                                     }
 
@@ -175,7 +190,7 @@ class Display extends Component {
                                     } 
         
                                     //-----------------------------------TokenForToken-------------------------------------------------------------------------------------------
-                                    else if (decodedData["name"]==="swapExactTokensForTokensSupportingFeeOnTransferTokens") {
+                                    else if (decodedData["name"]==="swapExactTokensForTokensSupportingFeeOnTransferTokens"||decodedData["name"]==="swapExactTokensForTokens") {
                                         let MyContract =      await new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
                                         transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
                                             return res;
@@ -200,43 +215,17 @@ class Display extends Component {
                                             transaction.payLoad  =  transaction.amountOut
                                         }  
                                         else{
-                                            transaction.payLoad  =  "";
+                                            
+                                            console.log("here1")
+                                            let mycontract2 = await new web3.eth.Contract(abi, this.state.toAddress)
+                                            let pricearray   =  await mycontract2.methods.getAmountsOut(decodedData['params'][0]['value'], [decodedData["params"][2]["value"][0],'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2']).call();
+                                            console.log(pricearray)
+                                            transaction.payLoad =  pricearray[1] * this.state.rating /1000000000000000000
+                                                                                    
                                         }
         
                                     }  
-                                    else if (decodedData["name"]==="swapExactTokensForTokens") {
-                                        let MyContract =      await new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
-                                    
-                                        transaction.tokenIn = await MyContract.methods.symbol().call().then(function(res) {
-                                            return res;
-                                        })
-                                        transaction.tokenIn_Decimals = await MyContract.methods.decimals().call()
-                                        transaction.amountIn    = decodedData['params'][0]['value'] /Math.pow(10,transaction.tokenIn_Decimals)
-                                        let MyContract1         = new web3.eth.Contract(erc20abi, decodedData['params'][2]['value'][(decodedData['params'][2]['value'].length)-1])
-                                        transaction.tokenOut    = await MyContract1.methods.symbol().call().then(function(res) {
-                                            return res
-                                        })
-                                        transaction.TokenOut_Decimals = await MyContract1.methods.decimals().call()
-                                        transaction.amountOut   = decodedData['params'][1]['value'] / (Math.pow(10,transaction.TokenOut_Decimals))
-        
-                                        if(transaction.tokenIn === "WETH"||transaction.tokenIn ==="WBTC"||transaction.tokenOut === "WETH"||transaction.tokenOut ==="WBTC"){
-                                            return
-                                        }
-        
-                                        if (transaction.tokenIn === "USDC"||transaction.tokenIn ==="USDT"){
-                                            transaction.payLoad  =  transaction.amountIn
-                                        }
-                                        else if (transaction.tokenOut === "USDC"||transaction.tokenOut === "USDT"){
-                                            transaction.payLoad  =  transaction.amountOut
-                                        }
-                                        else{
-                                            transaction.payLoad  =  "";
-                                        }
-                                       
-        
-                                    }  
-                                    
-        
+                                   
                                     else if (decodedData["name"]==="swapTokensForExactTokens") {
         
                                         let MyContract =      await new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
@@ -262,11 +251,16 @@ class Display extends Component {
                                             transaction.payLoad  =  transaction.amountOut
                                         }
                                         else{
-                                            transaction.payLoad  =  "";
+                                            
+                                            console.log("here2")
+                                            let mycontract2 = await new web3.eth.Contract(abi, this.state.toAddress)
+                                            let pricearray   = await mycontract2.methods.getAmountsOut( decodedData['params'][1]['value'], [decodedData["params"][2]["value"][0],'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2']).call();
+                                            console.log(pricearray)
+                                            transaction.payLoad =  pricearray[1] * this.state.rating /1000000000000000000
                                         }
                             
                                     }   
-                                                               
+                            ////////////////////////////////////////////////////////Eth for token///////////////////////////////////////////////////////////////////////////////////////////              
                                     else if(decodedData["name"]==="swapExactETHForTokens"||decodedData["name"]==="swapETHForExactTokens"||decodedData["name"]==="swapExactETHForTokensSupportingFeeOnTransferTokens"){
                                         transaction.tokenIn     = 'WETH'
                                         transaction.amountIn    = tx.value / Math.pow(10,18)
@@ -297,7 +291,6 @@ class Display extends Component {
                                         transactions : transactions
                                     })
         
-                                    
                                     const Insert_transaction = {
                                         timeStamp : transaction.timeStamp,
                                         label     : transaction.label,
@@ -314,8 +307,8 @@ class Display extends Component {
 
 
 
-                                } 
-                            }
+                            //     } 
+                            // }
                         }
                     }
                     } catch (err) {
@@ -324,12 +317,33 @@ class Display extends Component {
         });
     }
 
+    async stop(){
+        console.log("this is a stop fun")
+        this.setState({
+            subscriptingstate : false
+        })
+
+    }
+
+    
     render () {
-        const rows  = this.state.transactions.map((transaction) => {
-            transaction.dexLink     = <a href="https://app.uniswap.org/#/swap" target="_blank">Go to Uniswap</a>
+      var rows = []
+    if(this.state.toAddress == 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D){
+         rows  = this.state.transactions.map((transaction) => {
+            transaction.dexLink     = <a href="https://app.uniswap.org/#/swap" target="_blank">Swap Interface</a>
             transaction.txHashLink  = <a href={"https://etherscan.io/tx/" + transaction.txHash} target="_blank">Click Here</a>
             return transaction
         })
+
+    }
+    if(this.state.toAddress == 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F){
+        rows  = this.state.transactions.map((transaction) => {
+            transaction.dexLink     = <a href="https://staging.sushi.com/#/swap" target="_blank">Swap Interface</a>
+            transaction.txHashLink  = <a href={"https://etherscan.io/tx/" + transaction.txHash} target="_blank">Click Here</a>
+            return transaction
+        })
+
+    }
         const data = {
             columns : [
                 
@@ -372,6 +386,15 @@ class Display extends Component {
             ],
             rows : rows,
         }
+        const handleRouterAddress = (e) => {
+            let toAddress  = e.target.value
+            this.setState({
+              toAddress : toAddress
+            })
+            console.log(this.state.toAddress)
+          }
+        
+
         return (
             <div>
             <h2>MONITORED DEX SWAPS</h2>
@@ -384,13 +407,16 @@ class Display extends Component {
                     placeholder={this.state.toAddress}
                     aria-label="Swap Address"
                     aria-describedby="basic-addon2"
+                    defaultValue = {this.state.toAddress} 
+                    onChange={handleRouterAddress}
                 />
-                <Button variant="primary" id="button-addon2" onClick={()=>this.load()}>
+                <Button variant="success" id="button-addon2" onClick={()=>this.load()}>
                         Load from firebase
                 </Button>
-                <Button variant="primary" id="button-addon2" onClick={()=>this.init()}>
-                        Start Scripting & Monitor
+                <Button variant={this.state.subscriptingstate ? "danger" : "primary"} id="button-addon2" onClick={this.state.subscriptingstate ?()=>this.stop():()=>this.init()}>
+                        {this.state.subscriptingstate ? "Stop Monitor" : "Start Monitor"}
                 </Button>
+
             </InputGroup>
 
             <br/>
@@ -402,6 +428,8 @@ class Display extends Component {
                     data
                 }
             />
+            <p> Uniswap   Address : 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D </p>
+            <p> Sushiswap Address : 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F</p>
             </div>
         );
     }
