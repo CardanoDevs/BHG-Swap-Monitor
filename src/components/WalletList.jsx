@@ -74,23 +74,33 @@ class WalletList extends Component {
       this.setState({
         show: true
       });
+
       console.log(key,Label, Address)
       this.setState({
           prevLabel : Label,
           prevAddress : Address,
-          editKey: key
+          editKey : key,
+          newAddress : Address,
+          newLabel : Label
       })
+
     }
     
     saveWallet(){
+
         if(this.state.newAddress==''||this.state.newLabel==''){
           alert("input date")
           return
         }
+
+
+
+
         const load = {
           Address : this.state.newAddress,
           Label : this.state.newLabel
         }
+
         var updates = {}
         updates['wallet/'+ this.state.editKey] = load;
         database.ref().update(updates).then(function(){
@@ -101,16 +111,19 @@ class WalletList extends Component {
         this.setState({
           show : false
         })
+
+
+
         this.Init();
 
     }
 
-
+    
 
     render () {
       const rows = this.state.walletLists.map((walletList) => {
         walletList.Actions =  <div>
-                                   <Button variant="outline-primary"  size = "sm" onClick={()=>this.editWalletList(walletList.key,walletList.Label,walletList.Address)}> Edits</Button>{' '}
+                                   <Button variant="outline-primary"  size = "sm" onClick={()=>this.editWalletList(walletList.key, walletList.Label, walletList.Address)}> Edits</Button>{' '}
                                    <Button variant="outline-danger"  size = "sm" onClick= {()=>this.deleteWalletList(walletList.key)}> Delete</Button>{' '}
                               </div>
         return walletList
@@ -211,7 +224,7 @@ class WalletList extends Component {
             </div>
         );
     }
-}
+  }
 export default WalletList;
 
 

@@ -5,7 +5,7 @@ import abiDecoder from  'abi-decoder'
 import { abi } from './abi.js';
 import  './Display.css';
 import { MDBDataTable   } from 'mdbreact';
-import { database ,storage, auth} from './firebase/firebase'
+import { database } from './firebase/firebase'
 
 
 
@@ -92,6 +92,7 @@ class Display extends Component {
                     this.setState({
                     fromAddresFilter : walletList
                 })
+                // console.log(this.state.fromAddresFilter,this.state.fromAddresFilter[1]['Address'] )
             }
         });
     }
@@ -138,11 +139,11 @@ class Display extends Component {
                                {
 
                             for (let i = 0; i < this.state.fromAddresFilter.length; i++) {
-                                if (this.state.fromAddress == this.state.fromAddresFilter[i]["Address"]){
+                                if (this.state.fromAddress === this.state.fromAddresFilter[i]["Address"]){
 
                                     let transaction = {
                                         fromAddress : tx.from,
-                                        label : this.fromAddresFilter["Label"][i],
+                                        label : this.state.fromAddresFilter["Label"][i],
                                         timeStamp : new Date().toISOString(),
                                     }
 
@@ -306,6 +307,7 @@ class Display extends Component {
                                         amountOut : transaction.amountOut,
                                         payLoad   : transaction.payLoad
                                     }
+
                                     var userListRef = database.ref('transactions')
                                     var newUserRef = userListRef.push();
                                     newUserRef.set(Insert_transaction);
