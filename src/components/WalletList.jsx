@@ -3,6 +3,8 @@ import { InputGroup, FormControl, Button, Modal} from 'react-bootstrap';
 import { MDBDataTable } from 'mdbreact';
 import { database,  auth } from './firebase/firebase';
 
+
+
 class WalletList extends Component {
     constructor(props) {
         super(props)
@@ -22,7 +24,7 @@ class WalletList extends Component {
           });
         }
     }
-    
+
     async componentWillMount() {
       await this.Init()
     }
