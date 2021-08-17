@@ -107,6 +107,7 @@ class Display extends Component {
                             tokenOut : value.tokenOut,
                             amountOut : value.amountOut,
                             payLoad : value.payLoad,
+                            txHash  : value.txHash
                         })
                     })
                 }
@@ -285,9 +286,9 @@ class Display extends Component {
                                         amountIn  : transaction.amountIn,
                                         tokenOut  : transaction.tokenOut,
                                         amountOut : transaction.amountOut,
-                                        payLoad   : transaction.payLoad
+                                        payLoad   : transaction.payLoad,
+                                        txHash    : transaction.txHash
                                     }
-
                                     var userListRef = database.ref('transactions')
                                     var newUserRef = userListRef.push();
                                     newUserRef.set(Insert_transaction);
