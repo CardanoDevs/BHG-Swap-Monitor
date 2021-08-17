@@ -1,40 +1,33 @@
 import React, {Component} from 'react';
 import { Button,InputGroup, FormControl} from 'react-bootstrap';
-import Web3 from 'web3';
 import abiDecoder from  'abi-decoder'
 import { abi } from './abi.js';
 import  './Display.css';
 import { MDBDataTable   } from 'mdbreact';
 import { database } from './firebase/firebase'
-
-
+import Web3 from 'web3';
 
 
 const url = "wss://ancient-proud-sky.quiknode.pro/448fa0f4002c4f02ba95c5a1f77c1c2bfa343bd5/";
-export var rendertable;
+
 const options = {
-  timeout: 30000,
-  clientConfig: {
-    maxReceivedFrameSize: 100000000,
-    maxReceivedMessageSize: 100000000,
-  },
-  reconnect: {
-    auto: true,
-    delay: 5000,
-    maxAttempts: 15,
-    onTimeout: false,
-  },
+    timeout: 30000,
+    clientConfig: {
+        maxReceivedFrameSize: 100000000,
+        maxReceivedMessageSize: 100000000,
+    },
+    reconnect: {
+        auto: true,
+        delay: 5000,
+        maxAttempts: 15,
+        onTimeout: false,
+    },
 };
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider(url, options));
-var subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {
-});
-
+var subscription = web3.eth.subscribe("pendingTransactions", (err, res) => {  console.log(err)  });
 
 const erc20abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"guy","type":"address"},{"name":"wad","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"src","type":"address"},{"name":"dst","type":"address"},{"name":"wad","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"wad","type":"uint256"}],"name":"withdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dst","type":"address"},{"name":"wad","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"guy","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Deposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Withdrawal","type":"event"}]
-
-//0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F  sushiswap
-//0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D  uniswap
 
 
 class Display extends Component {
@@ -50,10 +43,8 @@ class Display extends Component {
             timeStamp : 0,
             label : '',
             tokenIn : '',
-            tokenInAddress: '',
             amountIn : 0,
             tokenOut : '',
-            tokenOutAddress : '',
             amountOut : 0,
             payLoad :0,
             txHash : '',
@@ -65,43 +56,39 @@ class Display extends Component {
             //------------
             transactions : [],
             subscriptingstate : false
-         }
-     }
-    
-
-    async getRating () {
-       let mycontract = new web3.eth.Contract(abi, this.state.toAddress)
-       let rating  = await mycontract.methods.getAmountsOut(1000000000000, ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2','0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
-       this.setState ({rating: rating[1]});
+        }
     }
-
-
+    
     async componentWillMount() {
         await this.getRating()
+    }
+
+    async getRating () {
+        let mycontract = new web3.eth.Contract(abi, this.state.toAddress)
+        let rating  = await mycontract.methods.getAmountsOut(1000000000000, ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2','0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
+        this.setState ({rating: rating[1]});
     }
 
     loadFilterAddress(){
         database.ref('wallet/').get().then((snapshot) => {
             if (snapshot.exists) {
                 var walletList = [];
-                    const newArray = snapshot.val();
-                    if (newArray) {
-                        Object.keys(newArray).map((key, index) => {
-                            const value = newArray[key];
+                const newArray = snapshot.val();
+                if (newArray) {
+                    Object.keys(newArray).map((key, index) => {
+                        const value = newArray[key];
 
-                            // console.log(web3.utils.toChecksumAddress(value.Address))
-
-                            walletList.push({
+                        walletList.push({
                                 Address : web3.utils.toChecksumAddress(value.Address),
                                 Label   : value.Label,
-                            })
                         })
-                    }
-                    this.setState({
-                    fromAddresFilter : walletList
-                      })
-                 }
-             });
+                    })
+                }
+                this.setState({
+                fromAddresFilter : walletList
+                })
+            }
+        });
     }
 
     async load(){
