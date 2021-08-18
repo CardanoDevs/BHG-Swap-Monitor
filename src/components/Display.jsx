@@ -36,6 +36,7 @@ class Display extends Component {
          super(props)
          this.state = {
             fromAddressFilter : '',
+            previouseTxHash : '',
             //------------
             ID : 0,
             toAddress : '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
@@ -61,6 +62,7 @@ class Display extends Component {
     
     async componentWillMount() {
         await this.loadFilterAddress()
+        await this.load()
         await this.getRating()
         await this.init();
     }
@@ -163,6 +165,9 @@ s
                                         label : this.state.fromAddressFilter[i]["Label"],
                                         timeStamp : new Date().toISOString(),
                                     }
+
+                                    if (this.state.previouseTxHash == tx.hash)
+                                        return
                                     //----------------------------TokenforETH----------------------------------------
                                     if (decodedData["name"]=="swapExactTokensForETH"||decodedData["name"]=="swapExactTokensForETHSupportingFeeOnTransferTokens"){
                                         let MyContract = new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
@@ -283,7 +288,8 @@ s
                                     this.setState(transaction);
         
                                     this.setState({
-                                        transactions : transactions
+                                        transactions : transactions, 
+                                        previouseTxHash : tx.hash
                                     })
         
                                     const Insert_transaction = {
@@ -301,12 +307,6 @@ s
                                     newUserRef.set(Insert_transaction);
                                 } 
 
-                                else{
-                                    // console.log(checkAddress)
-                                    // console.log(this.state.fromAddressFilter[i]["Address"])
-                                    // console.log(checkAddress == this.state.fromAddressFilter[i]["Address"])
-                                    // console.log("")
-                                }
                             }
                         }
                     }
