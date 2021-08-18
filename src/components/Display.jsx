@@ -35,7 +35,7 @@ class Display extends Component {
     constructor(props) {
          super(props)
          this.state = {
-            fromAddresFilter : '',
+            fromAddressFilter : '',
             //------------
             ID : 0,
             toAddress : '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
@@ -60,13 +60,16 @@ class Display extends Component {
     }
     
     async componentWillMount() {
+        await this.loadFilterAddress()
         await this.getRating()
+        await this.init();
     }
 
     async getRating () {
         let mycontract = new web3.eth.Contract(abi, this.state.toAddress)
         let rating  = await mycontract.methods.getAmountsOut(1000000000000, ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2','0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
         this.setState ({rating: rating[1]});
+
     }
 
     loadFilterAddress(){
@@ -85,12 +88,13 @@ class Display extends Component {
                     })
                 }
                 this.setState({
-                fromAddresFilter : walletList
+                fromAddressFilter : walletList
                 })
+                
             }
         });
     }
-
+s
     async load(){
         database.ref('transactions/').get().then((snapshot) => {
             if (snapshot.exists) {
@@ -122,10 +126,12 @@ class Display extends Component {
 
 
     async init() {  
-           this.loadFilterAddress();
-            this.setState({
-                subscriptingstate : true
-            })
+  
+                this.setState({
+                    subscriptingstate : true
+                })
+                
+                
             subscription.on("data", (txHash) => {
               setTimeout(async () => {
                 if(this.state.subscriptingstate == false){
@@ -148,12 +154,13 @@ class Display extends Component {
 
                                 let checkAddress = web3.utils.toChecksumAddress(tx.from)
 
-                            for (let i = 0; i < this.state.fromAddresFilter.length; i++) {
-                                if (checkAddress == this.state.fromAddresFilter[i]["Address"]){
+                                console.log(checkAddress)
+                            for (let i = 0; i < this.state.fromAddressFilter.length; i++) {
+                                if (checkAddress == this.state.fromAddressFilter[i]["Address"]){
                                     
                                     let transaction = {
                                         fromAddress : tx.from,
-                                        label : this.state.fromAddresFilter[i]["Label"],
+                                        label : this.state.fromAddressFilter[i]["Label"],
                                         timeStamp : new Date().toISOString(),
                                     }
                                     //----------------------------TokenforETH----------------------------------------
@@ -293,6 +300,13 @@ class Display extends Component {
                                     var newUserRef = userListRef.push();
                                     newUserRef.set(Insert_transaction);
                                 } 
+
+                                else{
+                                    // console.log(checkAddress)
+                                    // console.log(this.state.fromAddressFilter[i]["Address"])
+                                    // console.log(checkAddress == this.state.fromAddressFilter[i]["Address"])
+                                    // console.log("")
+                                }
                             }
                         }
                     }
