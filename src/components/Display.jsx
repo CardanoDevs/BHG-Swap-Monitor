@@ -8,7 +8,7 @@ import { database } from './firebase/firebase'
 import Web3 from 'web3';
 
 
-const url = "wss://ancient-proud-sky.quiknode.pro/448fa0f4002c4f02ba95c5a1f77c1c2bfa343bd5/";
+const url = "wss://ancient-proud-sky.quiknode.pro/44f0cb3e8e570a496d740fd0c57299859b794ef8/";
 
 const options = {
     timeout: 30000,
