@@ -397,19 +397,14 @@ s
             <h2>MONITORED DEX SWAPS</h2>
             <hr/><br/><br/>
             <InputGroup className="mb-2">
-                <InputGroup.Text id="basic-addon3">
-                    Uniswap Router Address
+                <InputGroup.Text id="basic-addon3"     
+                                aria-label="Swap Address"
+                                aria-describedby="basic-addon2">
+                   Sushiswap : 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F
+                   Uniswap : 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
                 </InputGroup.Text>
-                <FormControl
-                    placeholder={this.state.toAddress}
-                    aria-label="Swap Address"
-                    aria-describedby="basic-addon2"
-                    defaultValue = {this.state.toAddress} 
-                    onChange={handleRouterAddress}
-                />
-                <Button variant="success" id="button-addon2" onClick={()=>this.load()}>
-                        Load from firebase
-                </Button>
+               
+
                 <Button variant={this.state.subscriptingstate ? "danger" : "primary"} id="button-addon2" onClick={this.state.subscriptingstate ?()=>this.stop():()=>this.init()}>
                         {this.state.subscriptingstate ? "Stop Monitor" : "Start Monitor"}
                 </Button>
