@@ -39,7 +39,8 @@ class Display extends Component {
             previouseTxHash : '',
             //------------
             ID : 0,
-            toAddress : '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+            uniRouterAddress : '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+            sushiRouterAddress : '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F',
             fromAddress : '',
             timeStamp : 0,
             label : '',
@@ -68,7 +69,7 @@ class Display extends Component {
     }
 
     async getRating () {
-        let mycontract = new web3.eth.Contract(abi, this.state.toAddress)
+        let mycontract = new web3.eth.Contract(abi, this.state.uniRouterAddress)
         let rating  = await mycontract.methods.getAmountsOut(1000000000000, ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2','0xdac17f958d2ee523a2206206994597c13d831ec7']).call();
         this.setState ({rating: rating[1]});
 
@@ -144,25 +145,23 @@ s
                     let tx = await web3.eth.getTransaction(txHash);
                     abiDecoder.addABI(abi);
                     var decodedData = abiDecoder.decodeMethod(tx.input);
-                        if(tx.to == this.state.toAddress) {   
+                        if(tx.to == this.state.uniRouterAddress || tx.to == this.state.sushiRouterAddress) 
+                        {   
 
                                 // let buffer = ture
                                if(decodedData["name"]=="swapExactTokensForETH"||decodedData["name"]=="swapTokensForExactETH"||decodedData["name"]=="swapExactTokensForETHSupportingFeeOnTransferTokens"||
                                   decodedData["name"]=="swapTokensForExactTokens"||decodedData["name"]=="swapExactTokensForTokens"||decodedData["name"]=="swapExactTokensForTokensSupportingFeeOnTransferTokens"||
                                   decodedData["name"]=="swapExactETHForTokens"||decodedData["name"]=="swapETHForExactTokens"||decodedData["name"]=="swapExactETHForTokensSupportingFeeOnTransferTokens")    
-                               
                                {
 
-
                                 let checkAddress = web3.utils.toChecksumAddress(tx.from)
-
                                 console.log(checkAddress)
-                            for (let i = 0; i < this.state.fromAddressFilter.length; i++) {
-                                if (checkAddress == this.state.fromAddressFilter[i]["Address"]){
+                                // for (let i = 0; i < this.state.fromAddressFilter.length; i++) {
+                                // if (checkAddress == this.state.fromAddressFilter[i]["Address"]){
                                     
                                     let transaction = {
                                         fromAddress : tx.from,
-                                        label : this.state.fromAddressFilter[i]["Label"],
+                                        label : 'jjj',
                                         timeStamp : new Date().toISOString(),
                                     }
 
@@ -220,13 +219,11 @@ s
                                             transaction.payLoad  =  transaction.amountOut
                                         }  
                                         else{
-                                            let mycontract2 = await new web3.eth.Contract(abi, this.state.toAddress)
+                                            let mycontract2 = await new web3.eth.Contract(abi, this.state.uniRouterAddress)
                                             let pricearray   =  await mycontract2.methods.getAmountsOut(decodedData['params'][0]['value'], [decodedData["params"][2]["value"][0],'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2']).call();
                                             transaction.payLoad =  pricearray[1] * this.state.rating /1000000000000000000
                                         }
-        
                                     }  
-                                   
                                     else if (decodedData["name"]=="swapTokensForExactTokens") {
         
                                         let MyContract =      await new web3.eth.Contract(erc20abi,decodedData["params"][2]["value"][0]);
@@ -252,13 +249,10 @@ s
                                             transaction.payLoad  =  transaction.amountOut
                                         }
                                         else{
-                                            
-                                          
-                                            let mycontract2 = await new web3.eth.Contract(abi, this.state.toAddress)
+                                            let mycontract2 = await new web3.eth.Contract(abi, this.state.uniRouterAddress)
                                             let pricearray   = await mycontract2.methods.getAmountsOut( decodedData['params'][1]['value'], [decodedData["params"][2]["value"][0],'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2']).call();
                                             transaction.payLoad =  pricearray[1] * this.state.rating /1000000000000000000
                                         }
-                            
                                     }   
                             ////////////////////////////////////////////////////////Eth for token///////////////////////////////////////////////////////////////////////////////////////////              
                                     else if(decodedData["name"]=="swapExactETHForTokens"||decodedData["name"]=="swapETHForExactTokens"||decodedData["name"]=="swapExactETHForTokensSupportingFeeOnTransferTokens"){
@@ -281,17 +275,21 @@ s
                                     transaction.amountIn  = Math.round(transaction.amountIn * 100000) / 100000
                                     transaction.amountOut = Math.round(transaction.amountOut * 100000) / 100000
                                     transaction.payLoad   = "$"+Math.round(transaction.payLoad * 100)/ 100
-                                    
+
+                                    if(tx.to == this.state.uniRouterAddress){
+                                        transaction.dexLink = <a href="https://app.uniswap.org/#/swap" target="_blank">UniSwap Interface</a>
+                                    }
+                                    else{
+                                        transaction.dexLink = <a href="https://staging.sushi.com/#/swap" target="_blank">SushiSwap Interface</a>
+                                    }
+
+
+
                                     let transactions    = this.state.transactions
-                                    
                                     transactions.push(transaction)
                                     this.setState(transaction);
-        
-                                    this.setState({
-                                        transactions : transactions, 
-                                        previouseTxHash : tx.hash
-                                    })
-        
+
+
                                     const Insert_transaction = {
                                         timeStamp : transaction.timeStamp,
                                         label     : transaction.label,
@@ -300,15 +298,17 @@ s
                                         tokenOut  : transaction.tokenOut,
                                         amountOut : transaction.amountOut,
                                         payLoad   : transaction.payLoad,
-                                        txHash    : transaction.txHash
+                                        txHash    : transaction.txHash,
+                                        dexLink   : transaction.dexLink
                                     }
+
                                     var userListRef = database.ref('transactions')
                                     var newUserRef = userListRef.push();
                                     newUserRef.set(Insert_transaction);
                                 } 
 
-                            }
-                        }
+                        //     }
+                        // }
                     }
                     } catch (err) {
                 }
@@ -325,22 +325,12 @@ s
 
     render () {
       var rows = []
-    if(this.state.toAddress == 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D){
-         rows  = this.state.transactions.map((transaction) => {
-            transaction.dexLink     = <a href="https://app.uniswap.org/#/swap" target="_blank">Swap Interface</a>
-            transaction.txHashLink  = <a href={"https://etherscan.io/tx/" + transaction.txHash} target="_blank">Click Here</a>
-            return transaction
-        })
-    }
-    if(this.state.toAddress == 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F){
+
         rows  = this.state.transactions.map((transaction) => {
-            transaction.dexLink     = <a href="https://staging.sushi.com/#/swap" target="_blank">Swap Interface</a>
             transaction.txHashLink  = <a href={"https://etherscan.io/tx/" + transaction.txHash} target="_blank">Click Here</a>
             return transaction
         })
-    }
-
-
+    
     const data = {
             columns : [
                 
@@ -384,9 +374,9 @@ s
             rows : rows,
     }
     const handleRouterAddress = (e) => {
-            let toAddress  = e.target.value
+            let uniRouterAddress  = e.target.value
             this.setState({
-              toAddress : toAddress
+              uniRouterAddress : uniRouterAddress
             })
     }
         
@@ -400,10 +390,10 @@ s
                     Uniswap Router Address
                 </InputGroup.Text>
                 <FormControl
-                    placeholder={this.state.toAddress}
+                    placeholder={this.state.uniRouterAddress}
                     aria-label="Swap Address"
                     aria-describedby="basic-addon2"
-                    defaultValue = {this.state.toAddress} 
+                    defaultValue = {this.state.uniRouterAddress} 
                     onChange={handleRouterAddress}
                 />
                 <Button variant="success" id="button-addon2" onClick={()=>this.load()}>
