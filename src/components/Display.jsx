@@ -162,8 +162,8 @@ s
                                 let checkAddress = web3.utils.toChecksumAddress(tx.from)
 
                                 console.log(checkAddress)
-                            // for (let i = 0; i < this.state.fromAddressFilter.length; i++) {
-                            //     if (checkAddress == this.state.fromAddressFilter[i]["Address"]){
+                            for (let i = 0; i < this.state.fromAddressFilter.length; i++) {
+                                if (checkAddress == this.state.fromAddressFilter[i]["Address"]){
                                     
                                     let transaction = {
                                         toAddress : tx.to,
@@ -312,8 +312,8 @@ s
 
 
                             }
-                    //     }
-                    // }
+                        }
+                    }
                     } catch (err) {
                 }
             });
@@ -403,8 +403,13 @@ s
                 <InputGroup.Text id="basic-addon3"     
                                 aria-label="Swap Address"
                                 aria-describedby="basic-addon2">
-                   Sushiswap : 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F
-                   Uniswap : 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+                   <b>Uni Swap</b> : 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+
+                </InputGroup.Text>
+                <InputGroup.Text id="basic-addon3"     
+                                aria-label="Swap Address"
+                                aria-describedby="basic-addon2">
+                   <b>SushiSwap</b> : 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F
                 </InputGroup.Text>
                
 
