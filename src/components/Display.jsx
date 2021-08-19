@@ -60,8 +60,6 @@ class Display extends Component {
         }
     }
     
-
-
     async componentWillMount() {
         await this.loadFilterAddress()
         await this.getRating()
@@ -110,7 +108,7 @@ class Display extends Component {
                 if (newArray) {
                     Object.keys(newArray).map((key, index) => {
                         const value = newArray[key];
-                        transaction.push({
+                        transaction.unshift({
                             toAddress : value.toAddress,
                             timeStamp : value.timeStamp,
                             label : value.label,
@@ -130,9 +128,6 @@ class Display extends Component {
         });
     }
 
-
-
-  
     async init() {  
             subscription.on("data", (txHash) => {
               setTimeout(async () => {
@@ -144,8 +139,6 @@ class Display extends Component {
             });
         });
     }
-
-
 
     async start(txHash){
         this.setState({
@@ -298,7 +291,7 @@ class Display extends Component {
                           
                           let transactions    = this.state.transactions
                           
-                          transactions.push(transaction)
+                          transactions.unshift(transaction)
                           this.setState(transaction);
   
                           this.setState({
