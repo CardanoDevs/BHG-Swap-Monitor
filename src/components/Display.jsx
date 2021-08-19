@@ -36,6 +36,8 @@ class Display extends Component {
          super(props)
          this.state = {
             fromAddressFilter : '',
+            uniRouter : '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+            shhRouter : '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F',
             //------------
             ID : 0,
             toAddress : '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
@@ -143,7 +145,11 @@ s
                     let tx = await web3.eth.getTransaction(txHash);
                     abiDecoder.addABI(abi);
                     var decodedData = abiDecoder.decodeMethod(tx.input);
-                        if(tx.to == this.state.toAddress) {   
+                        if(tx.to == this.state.uniRouter || tx.to == this.state.shhRouter) {
+                                
+                           this.setState({
+                               toAddress : tx.to
+                           })
 
                                 // let buffer = ture
                                if(decodedData["name"]=="swapExactTokensForETH"||decodedData["name"]=="swapTokensForExactETH"||decodedData["name"]=="swapExactTokensForETHSupportingFeeOnTransferTokens"||
@@ -156,12 +162,13 @@ s
                                 let checkAddress = web3.utils.toChecksumAddress(tx.from)
 
                                 console.log(checkAddress)
-                            for (let i = 0; i < this.state.fromAddressFilter.length; i++) {
-                                if (checkAddress == this.state.fromAddressFilter[i]["Address"]){
+                            // for (let i = 0; i < this.state.fromAddressFilter.length; i++) {
+                            //     if (checkAddress == this.state.fromAddressFilter[i]["Address"]){
                                     
                                     let transaction = {
+                                        toAddress : tx.to,
                                         fromAddress : tx.from,
-                                        label : this.state.fromAddressFilter[i]["Label"],
+                                        label : 'jjj    ',
                                         timeStamp : new Date().toISOString(),
                                     }
                                     //----------------------------TokenforETH----------------------------------------
@@ -288,6 +295,7 @@ s
                                     })
         
                                     const Insert_transaction = {
+                                        toAddress : transaction.toAddress,
                                         timeStamp : transaction.timeStamp,
                                         label     : transaction.label,
                                         tokenIn   : transaction.tokenIn,
@@ -302,15 +310,10 @@ s
                                     newUserRef.set(Insert_transaction);
                                 } 
 
-                                else{
-                                    // console.log(checkAddress)
-                                    // console.log(this.state.fromAddressFilter[i]["Address"])
-                                    // console.log(checkAddress == this.state.fromAddressFilter[i]["Address"])
-                                    // console.log("")
-                                }
+
                             }
-                        }
-                    }
+                    //     }
+                    // }
                     } catch (err) {
                 }
             });
@@ -326,20 +329,20 @@ s
 
     render () {
       var rows = []
-    if(this.state.toAddress == 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D){
+   
          rows  = this.state.transactions.map((transaction) => {
-            transaction.dexLink     = <a href="https://app.uniswap.org/#/swap" target="_blank">Swap Interface</a>
+            if(transaction.toAddress==this.state.uniRouter){
+                transaction.dexLink     = <a href="https://app.uniswap.org/#/swap" target="_blank">UniSwap</a>
+            }
+            else if(transaction.toAddress == this.state.shhRouter){
+                transaction.dexLink     = <a href="https://staging.sushi.com/#/swap" target="_blank">SushiSwap</a>
+            }
+            
             transaction.txHashLink  = <a href={"https://etherscan.io/tx/" + transaction.txHash} target="_blank">Click Here</a>
             return transaction
         })
-    }
-    if(this.state.toAddress == 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F){
-        rows  = this.state.transactions.map((transaction) => {
-            transaction.dexLink     = <a href="https://staging.sushi.com/#/swap" target="_blank">Swap Interface</a>
-            transaction.txHashLink  = <a href={"https://etherscan.io/tx/" + transaction.txHash} target="_blank">Click Here</a>
-            return transaction
-        })
-    }
+    
+
 
 
     const data = {
@@ -420,8 +423,7 @@ s
                     data
                 }
             />
-            <p> Uniswap   Address : 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D </p>
-            <p> Sushiswap Address : 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F</p>
+
             </div>
         );
     }
