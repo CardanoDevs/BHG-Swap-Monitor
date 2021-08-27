@@ -134,8 +134,9 @@ class Display extends Component {
             subscription.on("data", (txHash) => {
               setTimeout(async () => {
 
-                this.setState({txHash : txHash})
+                
                 if(this.state.subscriptingstate == true){
+                    this.setState({txHash : txHash})
                     this.start(this.state.txHash);
                    }
             });
