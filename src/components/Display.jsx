@@ -63,10 +63,10 @@ class Display extends Component {
     }
     
     async componentWillMount() {
-        await this.loadFilterAddress()
-        await this.getRating()
-        await this.init();
-        await this.load();
+         this.load();
+         this.loadFilterAddress()
+         this.init();
+         this.getRating()
     }
 
 
