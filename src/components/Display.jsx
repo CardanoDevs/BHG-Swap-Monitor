@@ -136,8 +136,7 @@ class Display extends Component {
 
                 
                 if(this.state.subscriptingstate == true){
-                    this.setState({txHash : txHash})
-                    this.start(this.state.txHash);
+                    this.start(txHash);
                    }
             });
         });
